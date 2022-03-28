@@ -28,6 +28,6 @@ hs_err_pid*
 
 \.settings/
 
-src/main/java/br/com/segmedic/clubflex/support/Test.java
+src/main/java/br/com/bolao/bolao10/support/Test.java
 
 .DS_Store

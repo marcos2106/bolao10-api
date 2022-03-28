@@ -1,5 +1,5 @@
 
-package br.com.segmedic.clubflex.jms;
+package br.com.bolao.bolao10.jms;
 
 import javax.jms.JMSException;
 import org.springframework.beans.factory.annotation.Autowired;
