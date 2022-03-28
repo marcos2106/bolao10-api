@@ -1,4 +1,4 @@
-package br.com.segmedic.clubflex.support.email;
+package br.com.bolao.bolao10.support.email;
 
 import java.util.Map;
 

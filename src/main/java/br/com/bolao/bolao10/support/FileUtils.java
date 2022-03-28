@@ -1,5 +1,5 @@
 
-package br.com.segmedic.clubflex.support;
+package br.com.bolao.bolao10.support;
 
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;

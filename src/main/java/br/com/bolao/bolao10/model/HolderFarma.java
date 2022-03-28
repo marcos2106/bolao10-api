@@ -1,11 +1,10 @@
 
-package br.com.segmedic.clubflex.model;
+package br.com.bolao.bolao10.model;
 
 import java.io.Serializable;
-import java.util.List;
-import br.com.segmedic.clubflex.domain.Dependent;
-import br.com.segmedic.clubflex.domain.enums.SubscriptionStatus;
-import br.com.segmedic.clubflex.support.Strings;
+
+import br.com.bolao.bolao10.domain.enums.SubscriptionStatus;
+import br.com.bolao.bolao10.support.Strings;
 
 public class HolderFarma implements Serializable {
 
@@ -18,7 +17,6 @@ public class HolderFarma implements Serializable {
    private Long idSubscription;
    private Long idClubcard;
    private SubscriptionStatus status;
-   private List<Dependent> listDependents;
 
    public Long getId() {
       return id;
@@ -53,14 +51,6 @@ public class HolderFarma implements Serializable {
 
    public void setIsHolder(Boolean isHolder) {
       this.isHolder = isHolder;
-   }
-
-   public List<Dependent> getListDependents() {
-      return listDependents;
-   }
-
-   public void setListDependents(List<Dependent> listDependents) {
-      this.listDependents = listDependents;
    }
 
    public Long getIdSubscription() {

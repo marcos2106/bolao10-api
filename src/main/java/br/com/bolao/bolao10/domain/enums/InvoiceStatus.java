@@ -1,4 +1,4 @@
-package br.com.segmedic.clubflex.domain.enums;
+package br.com.bolao.bolao10.domain.enums;
 
 public enum InvoiceStatus {
 	PAID("Pago"), 

@@ -1,4 +1,4 @@
-package br.com.segmedic.clubflex.support;
+package br.com.bolao.bolao10.support;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

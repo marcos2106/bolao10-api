@@ -1,5 +1,5 @@
 
-package br.com.segmedic.clubflex.domain;
+package br.com.bolao.bolao10.domain;
 
 import java.io.Serializable;
 import javax.persistence.CascadeType;
@@ -17,11 +17,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import br.com.segmedic.clubflex.domain.enums.Sex;
-import br.com.segmedic.clubflex.domain.enums.UserProfile;
-import br.com.segmedic.clubflex.support.Strings;
+import br.com.bolao.bolao10.domain.enums.Sex;
+import br.com.bolao.bolao10.domain.enums.UserProfile;
+import br.com.bolao.bolao10.support.Strings;
 
-@Entity
 @Table(name = "user", indexes = @Index(columnList = "login,password,profile,flag_active"))
 public class User implements Serializable {
 
@@ -52,14 +51,6 @@ public class User implements Serializable {
    @ManyToOne(cascade = CascadeType.MERGE, optional = true, fetch = FetchType.EAGER)
    @JoinColumn(name = "idholder", nullable = true)
    private Holder holder;
-
-   @ManyToOne(cascade = CascadeType.MERGE, optional = true, fetch = FetchType.EAGER)
-   @JoinColumn(name = "iddependent", nullable = true)
-   private Dependent dependent;
-
-   @ManyToOne(cascade = CascadeType.MERGE, optional = true, fetch = FetchType.EAGER)
-   @JoinColumn(name = "idbroker", nullable = true)
-   private Broker broker;
 
    @Column(name = "email", nullable = true, columnDefinition = "VARCHAR(60)")
    private String email;
@@ -138,42 +129,15 @@ public class User implements Serializable {
       this.holder = holder;
    }
 
-   public Dependent getDependent() {
-      return dependent;
-   }
-
-   public void setDependent(Dependent dependent) {
-      this.dependent = dependent;
-   }
-
    public void setEmail(String email) {
       this.email = email;
    }
 
    public String getEmail() {
-      if (UserProfile.HOLDER.equals(this.profile) && this.holder != null) {
-         return this.holder.getEmail();
-      }
-      else if (UserProfile.DEPENDENT.equals(this.profile) && this.dependent != null) {
-         return this.dependent.getEmail();
-      }
-      else if (UserProfile.BROKER.equals(this.profile) && this.broker != null) {
-         return this.broker.getEmail();
-      }
-      else {
-         return this.email;
-      }
+	   return email;
    }
 
-   public Broker getBroker() {
-      return broker;
-   }
-
-   public void setBroker(Broker broker) {
-      this.broker = broker;
-   }
-
-   @Override
+@Override
    public int hashCode() {
       final int prime = 31;
       int result = 1;

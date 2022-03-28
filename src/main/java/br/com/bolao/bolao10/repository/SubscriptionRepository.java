@@ -1,34 +1,26 @@
 
-package br.com.segmedic.clubflex.repository;
+package br.com.bolao.bolao10.repository;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import com.google.common.collect.Lists;
+
 import com.google.common.collect.Maps;
-import br.com.segmedic.clubflex.domain.Dependent;
-import br.com.segmedic.clubflex.domain.Invoice;
-import br.com.segmedic.clubflex.domain.Subscription;
-import br.com.segmedic.clubflex.domain.SubscriptionLog;
-import br.com.segmedic.clubflex.domain.enums.DependentStatus;
-import br.com.segmedic.clubflex.domain.enums.PaymentType;
-import br.com.segmedic.clubflex.domain.enums.SubscriptionStatus;
-import br.com.segmedic.clubflex.domain.enums.TypeSub;
-import br.com.segmedic.clubflex.domain.enums.UserProfile;
-import br.com.segmedic.clubflex.model.FinanceReportResult;
-import br.com.segmedic.clubflex.model.OperationalReportFilter;
-import br.com.segmedic.clubflex.model.PlanReportFilter;
-import br.com.segmedic.clubflex.model.SubLog;
-import br.com.segmedic.clubflex.model.SubscriptionFilter;
+
+import br.com.bolao.bolao10.domain.Invoice;
+import br.com.bolao.bolao10.domain.Subscription;
+import br.com.bolao.bolao10.domain.enums.SubscriptionStatus;
+import br.com.bolao.bolao10.model.SubscriptionFilter;
 
 @Repository
 public class SubscriptionRepository extends GenericRepository {
@@ -172,45 +164,6 @@ public class SubscriptionRepository extends GenericRepository {
       }
    }
 
-   public List<Subscription> findByDependentCpf(String cpf) {
-      StringBuilder sql = new StringBuilder();
-      sql.append(" select d ");
-      sql.append(" from Dependent d ");
-      sql.append(" where d.cpf = :cpf");
-
-      TypedQuery<Dependent> query = em.createQuery(sql.toString(), Dependent.class);
-      query.setParameter("cpf", cpf);
-
-      try {
-         return query.getResultList().stream().map(d -> {
-            return d.getSubscription();
-         }).collect(Collectors.toList());
-      }
-      catch (Exception e) {
-         return null;
-      }
-   }
-
-   public List<Subscription> findByDependentOkByCpf(String cpf) {
-      StringBuilder sql = new StringBuilder();
-      sql.append(" select d ");
-      sql.append(" from Dependent d ");
-      sql.append(" where d.cpf = :cpf ");
-      sql.append(" and d.status = :status ");
-
-      TypedQuery<Dependent> query = em.createQuery(sql.toString(), Dependent.class);
-      query.setParameter("cpf", cpf);
-      query.setParameter("status", DependentStatus.OK);
-
-      try {
-         return query.getResultList().stream().map(d -> {
-            return d.getSubscription();
-         }).collect(Collectors.toList());
-      }
-      catch (Exception e) {
-         return null;
-      }
-   }
 
    public Subscription getLastByHolderId(Long holderId) {
       StringBuilder sql = new StringBuilder();
@@ -347,78 +300,6 @@ public class SubscriptionRepository extends GenericRepository {
                .setParameter("dataVencimento", dataComparacao).getResultList();
    }
 
-   @SuppressWarnings("unchecked")
-   public List<BigInteger> listActiveSubscriptions(Integer actualCompetence, TypeSub typesub) {
-      StringBuilder sql = new StringBuilder();
-      sql.append(" select idsubscription   															");
-      sql.append("   from subscription 																");
-      sql.append("  where status = 'OK' 																");
-      sql.append("   and payment_type <> 'TICKETS' 													");
-      sql.append("   and date_cancellation is null													");
-      sql.append("   and type_sub = :typesub													        ");
-      sql.append("   and (date_last_competence <> :actualCompetence OR date_last_competence IS NULL)  ");
-
-      return em.createNativeQuery(sql.toString())
-               .setParameter("actualCompetence", actualCompetence)
-               .setParameter("typesub", typesub.name())
-               .getResultList();
-   }
-
-   @SuppressWarnings("unchecked")
-   public List<BigInteger> listActiveBlockedSubscriptions(Integer actualCompetence, TypeSub typesub) {
-      StringBuilder sql = new StringBuilder();
-      sql.append(" select idsubscription                                               ");
-      sql.append("   from subscription                                                 ");
-      sql.append("   where (status = 'OK' or status = 'BLOCKED')                        ");
-      sql.append("   and payment_type <> 'TICKETS'                                        ");
-      sql.append("   and date_cancellation is null                                     ");
-      sql.append("   and type_sub = :typesub                                             ");
-      sql.append("   and (date_last_competence <> :actualCompetence OR date_last_competence IS NULL)  ");
-
-      return em.createNativeQuery(sql.toString())
-               .setParameter("actualCompetence", actualCompetence)
-               .setParameter("typesub", typesub.name())
-               .getResultList();
-   }
-
-   @SuppressWarnings("unchecked")
-   public List<BigInteger> listActiveSubscriptions(Integer actualCompetence, Integer dayOfPayment, TypeSub typesub) {
-      StringBuilder sql = new StringBuilder();
-      sql.append(" select idsubscription   															");
-      sql.append("   from subscription 																");
-      sql.append("  where status = 'OK' 																");
-      sql.append("   and payment_type <> 'TICKETS' 													");
-      sql.append("   and date_cancellation is null													");
-      sql.append("   and type_sub = :typesub													        ");
-      sql.append("   and day_to_pay = :dayOfPayment													");
-      sql.append("   and (date_last_competence <> :actualCompetence OR date_last_competence IS NULL)  ");
-
-      return em.createNativeQuery(sql.toString())
-               .setParameter("actualCompetence", actualCompetence)
-               .setParameter("typesub", typesub.name())
-               .setParameter("dayOfPayment", dayOfPayment)
-               .getResultList();
-   }
-
-   @SuppressWarnings("unchecked")
-   public List<BigInteger> listActiveSubscriptionsInvoices(Integer actualCompetence, Integer dayOfPayment, TypeSub typesub) {
-      StringBuilder sql = new StringBuilder();
-      sql.append(" select idsubscription                                               ");
-      sql.append("   from subscription                                                 ");
-      sql.append("  where status = 'OK'                                                ");
-      sql.append("   and payment_type <> 'TICKETS'                                        ");
-      sql.append("   and date_cancellation is null                                     ");
-      sql.append("   and type_sub = :typesub                                             ");
-      // sql.append(" and day_to_pay = :dayOfPayment ");
-      sql.append("   and (date_last_competence <> :actualCompetence OR date_last_competence IS NULL)  ");
-
-      return em.createNativeQuery(sql.toString())
-               .setParameter("actualCompetence", actualCompetence)
-               .setParameter("typesub", typesub.name())
-               // .setParameter("dayOfPayment", dayOfPayment)
-               .getResultList();
-   }
-
    public List<Subscription> filter(SubscriptionFilter filter) {
       Map<String, Object> params = Maps.newConcurrentMap();
 
@@ -502,145 +383,6 @@ public class SubscriptionRepository extends GenericRepository {
       sql.append(" where s.status = 'OK' 									");
       sql.append(" and s.date_cancellation = current_date()				");
       return em.createNativeQuery(sql.toString()).getResultList();
-   }
-
-   public List<Subscription> filterReportFilter(PlanReportFilter filter) {
-      Map<String, Object> params = Maps.newConcurrentMap();
-
-      StringBuilder sql = new StringBuilder();
-      sql.append(" select distinct s ");
-      sql.append(" from Subscription s");
-      sql.append(" left join fetch s.dependents dep");
-      sql.append(" left join fetch s.cards card");
-      sql.append(" where 1=1 ");
-
-      if (filter.getIdBroker() != null) {
-         sql.append(" and s.broker.id = :idBroker ");
-         params.put("idBroker", filter.getIdBroker());
-      }
-
-      if (filter.getDateBegin() != null && filter.getDateEnd() != null) {
-         sql.append(" and s.dateOfRegistry BETWEEN :dataBegin AND :dataEnd ");
-         params.put("dataBegin", filter.getDateBegin());
-         params.put("dataEnd", filter.getDateEnd());
-      }
-
-      if (filter.getIdPlan() != null) {
-         sql.append(" and s.plan.id = :planId ");
-         params.put("planId", filter.getIdPlan());
-      }
-
-      if (filter.getIdUser() != null) {
-         sql.append(" and s.user.id = :userId ");
-         params.put("userId", filter.getIdUser());
-      }
-
-      TypedQuery<Subscription> query = em.createQuery(sql.toString(), Subscription.class);
-      params.entrySet().forEach(p -> {
-         query.setParameter(p.getKey(), p.getValue());
-      });
-
-      try {
-         return query.getResultList();
-      }
-      catch (Exception e) {
-         return null;
-      }
-   }
-
-   public void saveLog(SubscriptionLog log) {
-      super.persist(log);
-   }
-
-   @SuppressWarnings("unchecked")
-   public List<SubLog> listLog(Long subscriptionId) {
-      StringBuilder sql = new StringBuilder();
-      sql.append(" select ");
-      sql.append(" b.name, ");
-      sql.append(" b.profile, ");
-      sql.append(" DATE_FORMAT(a.date_time_log,'%d/%m/%Y %H:%i:%s') as datetimelog, ");
-      sql.append(" a.action,  ");
-      sql.append(" a.obs,      ");
-      sql.append(" r.description      ");
-      sql.append(" from subscription_log a left join user b on a.iduser = b.iduser ");
-      sql.append("        left join reason r on r.idreason = a.idreason ");
-      sql.append(" where a.idsubscription = :idsubscription ");
-      sql.append(" order by a.date_time_log ");
-
-      Query query = em.createNativeQuery(sql.toString());
-      query.setParameter("idsubscription", subscriptionId);
-
-      List<SubLog> logs = Lists.newArrayList();
-      List<Object[]> objects = query.getResultList();
-      objects.forEach(o -> {
-         SubLog log = new SubLog();
-         log.setUser(getStringValue(o, 1));
-         log.setProfile(getStringValue(o, 2));
-         log.setDateTime(getStringValue(o, 3));
-         log.setAction(getStringValue(o, 4));
-         log.setObs(getStringValue(o, 5));
-         log.setReason(getStringValue(o, 6));
-         logs.add(log);
-      });
-
-      return logs;
-   }
-
-   @SuppressWarnings("unchecked")
-   public List<FinanceReportResult> generateReportOperational(OperationalReportFilter filter) {
-      StringBuilder sql = new StringBuilder();
-      sql.append(" select ");
-      sql.append(" a.idsubscription, ");
-      sql.append(" b.name as holdername, ");
-      sql.append(" DATE_FORMAT(a.date_registred,'%d/%m/%Y') as registry, ");
-      sql.append(
-         " DATE_FORMAT((select payment_date from invoice i where i.idsubscription = a.idsubscription and i.status = 'PAID' order by payment_date asc limit 1),'%d/%m/%Y') as first_payment, ");
-      sql.append(
-         " (IF(length(b.cpf_cnpj) = 11, '1', '0') + (select count(*) from dependent dep where dep.idsubscription = a.idsubscription and dep.status = 'OK')) as total_lifes, ");
-      sql.append(" c.name as planname, ");
-      sql.append(" a.payment_type, ");
-      sql.append(
-         " (IF(length(b.cpf_cnpj) = 11, c.price_holder , '0') + (c.price_dependent * (select count(*) from dependent dep where dep.idsubscription = a.idsubscription and dep.status = 'OK'))) as price, ");
-      sql.append(" d.name as user_name, ");
-      sql.append(" d.profile as user_profile, ");
-      sql.append(" e.name as place, ");
-      sql.append(" f.name as broker, ");
-      sql.append(" a.status, ");
-      sql.append(" b.cellphone as cellphone, ");
-      sql.append(" b.homephone as homephone ");
-      sql.append(" from subscription a inner join holder b on a.idholder = b.idholder ");
-      sql.append("        inner join plan c on a.idplan = c.idplan ");
-      sql.append("        left join user d on a.iduser = d.iduser ");
-      sql.append("        left join company e on a.idcompany = e.idcompany ");
-      sql.append("        left join broker f on a.idbroker = f.idbroker ");
-      sql.append("where a.date_registred between :dataIni and :dataFim ");
-
-      Query query = em.createNativeQuery(sql.toString());
-      query.setParameter("dataIni", filter.getDateBegin());
-      query.setParameter("dataFim", filter.getDateEnd());
-
-      List<FinanceReportResult> reports = Lists.newArrayList();
-      List<Object[]> objects = query.getResultList();
-      objects.forEach(o -> {
-         FinanceReportResult report = new FinanceReportResult();
-         report.setSubscription(getStringValue(o, 1));
-         report.setHolderName(getStringValue(o, 2));
-         report.setRegistry(getStringValue(o, 3));
-         report.setFirstPayment(getStringValue(o, 4));
-         report.setTotalLife(getStringValue(o, 5));
-         report.setPlanName(getStringValue(o, 6));
-         report.setPaymentType(PaymentType.valueOf(getStringValue(o, 7)).getDescribe());
-         report.setPrice(getStringValue(o, 8));
-         report.setUser(getStringValue(o, 9));
-         report.setProfile(UserProfile.valueOf(getStringValue(o, 10)).getDescribe());
-         report.setPlace(getStringValue(o, 11));
-         report.setBroker(getStringValue(o, 12));
-         report.setStatus(SubscriptionStatus.valueOf(getStringValue(o, 13)).getDescribe());
-         report.setCellphone(getStringValue(o, 14));
-         report.setHomephone(getStringValue(o, 15));
-         reports.add(report);
-      });
-      return reports;
    }
 
    public List<Subscription> listSubscriptionActiveNotTickets() {

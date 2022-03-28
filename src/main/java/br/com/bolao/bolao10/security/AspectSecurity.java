@@ -1,4 +1,4 @@
-package br.com.segmedic.clubflex.security;
+package br.com.bolao.bolao10.security;
 
 import java.lang.annotation.Annotation;
 
@@ -11,7 +11,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import br.com.segmedic.clubflex.service.JWTService;
+import br.com.bolao.bolao10.service.JWTService;
 
 @Aspect
 @Component
@@ -25,7 +25,7 @@ public class AspectSecurity {
 	@Autowired
 	private JWTService jwtService;
 	
-	@Before("execution(public * *(..)) && @annotation(br.com.segmedic.clubflex.security.RequireAuthentication)")
+	@Before("execution(public * *(..)) && @annotation(br.com.bolao.bolao10.security.RequireAuthentication)")
 	public void callBeforeToken(JoinPoint joinPoint) {
 		//Validação de token
 		Annotation[] annotations = MethodSignature.class.cast(joinPoint.getSignature()).getMethod().getAnnotations();

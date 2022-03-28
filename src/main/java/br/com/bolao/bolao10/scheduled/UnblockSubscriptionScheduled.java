@@ -1,5 +1,5 @@
 
-package br.com.segmedic.clubflex.scheduled;
+package br.com.bolao.bolao10.scheduled;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import br.com.segmedic.clubflex.service.SubscriptionService;
+import br.com.bolao.bolao10.service.SubscriptionService;
 
 @Component
 public class UnblockSubscriptionScheduled {
@@ -25,10 +25,10 @@ public class UnblockSubscriptionScheduled {
    // @Scheduled(cron = "* 30 * * * *", zone = TIME_ZONE)
    public void execute() {
       try {
-         List<BigInteger> subscriptions = subscriptionService.listNoShouldBeBlocked();
-         subscriptions.forEach(subId -> {
-            subscriptionService.unBlock(subId.longValue());
-         });
+//         List<BigInteger> subscriptions = subscriptionService.listNoShouldBeBlocked();
+//         subscriptions.forEach(subId -> {
+//            subscriptionService.unBlock(subId.longValue());
+//         });
       }
       catch (Exception e) {
          LOGGER.error("Erro na execução da Scheduled de desbloqueio", e);

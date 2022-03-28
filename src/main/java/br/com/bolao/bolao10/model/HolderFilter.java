@@ -1,11 +1,11 @@
 
-package br.com.segmedic.clubflex.model;
+package br.com.bolao.bolao10.model;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import br.com.segmedic.clubflex.support.Strings;
+import br.com.bolao.bolao10.support.Strings;
 
 public class HolderFilter implements Serializable {
 

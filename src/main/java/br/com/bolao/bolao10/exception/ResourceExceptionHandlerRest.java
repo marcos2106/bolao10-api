@@ -1,4 +1,4 @@
-package br.com.segmedic.clubflex.exception;
+package br.com.bolao.bolao10.exception;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -10,17 +10,17 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import br.com.segmedic.clubflex.model.StandardResponse;
+import br.com.bolao.bolao10.model.StandardResponse;
 
-@ControllerAdvice("br.com.segmedic.clubflex.rest")
+@ControllerAdvice("br.com.bolao.bolao10.rest")
 public class ResourceExceptionHandlerRest {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ResourceExceptionHandlerRest.class);
 	
-	@ExceptionHandler(ClubFlexException.class)
-	public ResponseEntity<StandardResponse> doutorVirtualExceptions(ClubFlexException e, HttpServletRequest request){
+	@ExceptionHandler(Bolao10Exception.class)
+	public ResponseEntity<StandardResponse> doutorVirtualExceptions(Bolao10Exception e, HttpServletRequest request){
 		StandardResponse error = new StandardResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), System.currentTimeMillis());
-		esreverErroNoLog("ClubFlexException", e);
+		esreverErroNoLog("Bolao10Exception", e);
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
 	}
 	

@@ -1,5 +1,5 @@
 
-package br.com.segmedic.clubflex.model;
+package br.com.bolao.bolao10.model;
 
 import java.io.Serializable;
 

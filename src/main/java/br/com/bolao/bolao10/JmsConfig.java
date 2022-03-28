@@ -1,5 +1,5 @@
 
-package br.com.segmedic.clubflex;
+package br.com.bolao.bolao10;
 
 import java.util.Arrays;
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.core.JmsTemplate;
-import br.com.segmedic.clubflex.support.Constants;
+import br.com.bolao.bolao10.support.Constants;
 
 @Configuration
 @EnableJms
@@ -26,7 +26,7 @@ public class JmsConfig {
    @Bean
    public ActiveMQConnectionFactory connectionFactory() {
       ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
-      factory.setTrustedPackages(Arrays.asList("br.com.segmedic.clubflex", "java"));
+      factory.setTrustedPackages(Arrays.asList("br.com.bolao.bolao10", "java"));
       return factory;
    }
 

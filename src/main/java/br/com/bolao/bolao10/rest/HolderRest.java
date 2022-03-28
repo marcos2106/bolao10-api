@@ -1,8 +1,9 @@
 
-package br.com.segmedic.clubflex.rest;
+package br.com.bolao.bolao10.rest;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,27 +13,23 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import br.com.segmedic.clubflex.domain.Holder;
-import br.com.segmedic.clubflex.domain.User;
-import br.com.segmedic.clubflex.domain.enums.UserProfile;
-import br.com.segmedic.clubflex.model.DependentFilter;
-import br.com.segmedic.clubflex.model.HolderFarma;
-import br.com.segmedic.clubflex.model.HolderFilter;
-import br.com.segmedic.clubflex.model.HolderStatus;
-import br.com.segmedic.clubflex.security.RequireAuthentication;
-import br.com.segmedic.clubflex.service.DependentService;
-import br.com.segmedic.clubflex.service.HolderService;
-import br.com.segmedic.clubflex.service.UserService;
-import br.com.segmedic.clubflex.support.Cryptography;
+
+import br.com.bolao.bolao10.domain.Holder;
+import br.com.bolao.bolao10.domain.User;
+import br.com.bolao.bolao10.domain.enums.UserProfile;
+import br.com.bolao.bolao10.model.HolderFarma;
+import br.com.bolao.bolao10.model.HolderFilter;
+import br.com.bolao.bolao10.model.HolderStatus;
+import br.com.bolao.bolao10.security.RequireAuthentication;
+import br.com.bolao.bolao10.service.HolderService;
+import br.com.bolao.bolao10.service.UserService;
+import br.com.bolao.bolao10.support.Cryptography;
 
 @RestController
 public class HolderRest extends BaseRest {
 
    @Autowired
    private HolderService holderService;
-
-   @Autowired
-   private DependentService dependentService;
 
    @Autowired
    private UserService userService;
@@ -62,15 +59,6 @@ public class HolderRest extends BaseRest {
 
       List<HolderFarma> holders = new ArrayList<>();
       holders = holderService.filterBasic(filter);
-      return createObjectReturn(holders);
-   }
-
-   @PostMapping(value = "/dependent/filter", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-   @RequireAuthentication({UserProfile.ATTENDANT, UserProfile.BROKER, UserProfile.MANAGER, UserProfile.SUPERVISOR})
-   public @ResponseBody ResponseEntity<?> filterHolder(@RequestBody DependentFilter filter) {
-
-      List<HolderStatus> holders = new ArrayList<>();
-      holders = dependentService.filter(filter);
       return createObjectReturn(holders);
    }
 

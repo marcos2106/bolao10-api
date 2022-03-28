@@ -1,5 +1,5 @@
 
-package br.com.segmedic.clubflex.service;
+package br.com.bolao.bolao10.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,27 +11,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.com.segmedic.clubflex.domain.Holder;
-import br.com.segmedic.clubflex.domain.User;
-import br.com.segmedic.clubflex.domain.enums.EmailType;
-import br.com.segmedic.clubflex.domain.enums.UserProfile;
-import br.com.segmedic.clubflex.exception.ClubFlexException;
-import br.com.segmedic.clubflex.model.HolderFarma;
-import br.com.segmedic.clubflex.model.HolderFilter;
-import br.com.segmedic.clubflex.model.HolderStatus;
-import br.com.segmedic.clubflex.repository.HolderRepository;
-import br.com.segmedic.clubflex.repository.UserRepository;
-import br.com.segmedic.clubflex.support.CNPJValidator;
-import br.com.segmedic.clubflex.support.CPFValidator;
-import br.com.segmedic.clubflex.support.Constants;
-import br.com.segmedic.clubflex.support.EmailValidator;
-import br.com.segmedic.clubflex.support.Strings;
-import br.com.segmedic.clubflex.support.email.MailTemplate;
-import br.com.segmedic.clubflex.support.email.MailTemplateBuilder;
-import br.com.segmedic.clubflex.support.sms.SMSSendBuilder;
-import br.com.zenvia.client.exception.RestClientException;
-import br.com.zenvia.client.request.MessageSmsElement;
-import br.com.zenvia.client.request.MultipleMessageSms;
+import br.com.bolao.bolao10.domain.Holder;
+import br.com.bolao.bolao10.domain.User;
+import br.com.bolao.bolao10.domain.enums.UserProfile;
+import br.com.bolao.bolao10.exception.Bolao10Exception;
+import br.com.bolao.bolao10.model.HolderFarma;
+import br.com.bolao.bolao10.model.HolderFilter;
+import br.com.bolao.bolao10.model.HolderStatus;
+import br.com.bolao.bolao10.repository.HolderRepository;
+import br.com.bolao.bolao10.repository.UserRepository;
+import br.com.bolao.bolao10.support.CNPJValidator;
+import br.com.bolao.bolao10.support.CPFValidator;
+import br.com.bolao.bolao10.support.EmailValidator;
+import br.com.bolao.bolao10.support.Strings;
 
 @Service
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -46,12 +38,6 @@ public class HolderService {
    @Autowired
    private UserService userService;
 
-   @Autowired
-   private MailService mailService;
-
-   @Autowired
-   private TicketGatewayService ticketGatewayService;
-
    @Value("${zenvia.api.remetente}")
    private String remetente;
 
@@ -63,7 +49,7 @@ public class HolderService {
 
    public Holder findByCpfCnpj(String cpfCnpj) {
       if (StringUtils.isBlank(cpfCnpj)) {
-         throw new ClubFlexException("CPF/CNPJ não informado");
+         throw new Bolao10Exception("CPF/CNPJ não informado");
       }
       return holderRepository.findByCpfCnpj(Strings.removeNoNumericChars(cpfCnpj));
    }
@@ -71,29 +57,29 @@ public class HolderService {
    @Transactional
    public void save(Holder holder) {
       if (StringUtils.isBlank(holder.getName())) {
-         throw new ClubFlexException("Nome não informado");
+         throw new Bolao10Exception("Nome não informado");
       }
       if (StringUtils.isBlank(holder.getCpfCnpj())) {
-         throw new ClubFlexException("CPF/CNPJ não informado");
+         throw new Bolao10Exception("CPF/CNPJ não informado");
       }
       // if(StringUtils.isBlank(holder.getEmail())) {
-      // throw new ClubFlexException("E-mail não informado");
+      // throw new Bolao10Exception("E-mail não informado");
       // }
       if (holder.getCpfCnpj().length() >= 14 && !CNPJValidator.isValido(holder.getCpfCnpj())) {
-         throw new ClubFlexException("CNPJ inválido.");
+         throw new Bolao10Exception("CNPJ inválido.");
       }
       if (holder.getCpfCnpj().length() < 14) {
          if (holder.getCpfCnpj().length() != 11 || !CPFValidator.isValido(holder.getCpfCnpj())) {
-            throw new ClubFlexException("CPF inválido.");
+            throw new Bolao10Exception("CPF inválido.");
          }
       }
       if (StringUtils.isNotBlank(holder.getEmail())) {
          if (!EmailValidator.isValido(holder.getEmail())) {
-            throw new ClubFlexException("E-mail inválido.");
+            throw new Bolao10Exception("E-mail inválido.");
          }
       }
       if (StringUtils.isBlank(holder.getCellPhone())) {
-         throw new ClubFlexException("Telefone Celular não informado");
+         throw new Bolao10Exception("Telefone Celular não informado");
       }
 
       // salvar titular
@@ -117,86 +103,31 @@ public class HolderService {
             user.setPassword(passwd);
             user.setProfile(UserProfile.HOLDER);
             userService.save(user);
-            sendWelcomeMail(holder.getName(), holder.getEmail(), passwd);
+//            sendWelcomeMail(holder.getName(), holder.getEmail(), passwd);
          }
          else {
             user.setProfile(UserProfile.HOLDER);
             // user.setName(holder.getName());
-            user.setDependent(null);
             user.setHolder(holder);
             userRepository.save(user);
          }
       }
-
-      // atualiza no boleto simples se for o caso
-      ticketGatewayService.updateCustomer(holder);
-
    }
 
-   public void sendWelcomeMail(String name, String email, String password) {
-      if (StringUtils.isNotBlank(email)) {
-         MailTemplate mail = new MailTemplateBuilder()
-                  .subject("Bem vindo ao clubflex")
-                  .template("welcome-mail.html")
-                  .addParam("nome", name)
-                  .addParam("senha", password)
-                  .addParam(Constants.MAIL_SECTOR, EmailType.EMAIL_WELCOME.getDescribe())
-                  .addParam("linkclubflex", Constants.URL_LOGIN_CLUBFLEX_B2C)
-                  .to(email)
-                  .build();
-         mailService.scheduleSend(mail);
-      }
-   }
-
-   public void sendRequestCardMail(String name, String email) {
-      if (StringUtils.isNotBlank(email)) {
-         MailTemplate mail = new MailTemplateBuilder()
-                  .subject("Bem vindo ao clubflex")
-                  .template("request-card-mail.html")
-                  .addParam("nome", name)
-                  .addParam("linkclubflex", Constants.URL_LOGIN_CLUBFLEX_B2C)
-                  .addParam(Constants.MAIL_SECTOR, EmailType.EMAIL_FINANCE.getDescribe())
-                  .to(email)
-                  .build();
-         mailService.scheduleSend(mail);
-      }
-   }
-
-   public void sendWelcomeSMS(String name, String telefone, String senha) {
-      SMSSendBuilder smsBuilder = new SMSSendBuilder(username, password, 1000);
-      MultipleMessageSms multipleMessageSms = new MultipleMessageSms();
-      String mensagem = "Bem-vindo ao ClubFlex " + name.split(" ")[0]
-         + ", \nCadastre seu cartao de credito em https://meu.clubflex.com.br/ \nSenha:" + senha;
-      MessageSmsElement messageSms = new MessageSmsElement();
-      messageSms.setFrom(remetente);
-      messageSms.setMsg(mensagem);
-      messageSms.setTo("55".concat(telefone.replaceAll("[^0-9]", "")));
-      multipleMessageSms.addMessageSms(messageSms);
-      try {
-         smsBuilder.sendMultipleSms(multipleMessageSms);
-      }
-      catch (RestClientException e) {
-         e.printStackTrace();
-      }
-   }
-
-   public void sendRequestCardSMS(String name, String telefone) {
-      SMSSendBuilder smsBuilder = new SMSSendBuilder(username, password, 1000);
-      MultipleMessageSms multipleMessageSms = new MultipleMessageSms();
-      String mensagem =
-         "Ola " + name.split(" ")[0] + ", \nCadastre seu cartao de credito/debito em https://meu.clubflex.com.br/ \nTenha um otimo dia!";
-      MessageSmsElement messageSms = new MessageSmsElement();
-      messageSms.setFrom(remetente);
-      messageSms.setMsg(mensagem);
-      messageSms.setTo("55".concat(telefone.replaceAll("[^0-9]", "")));
-      multipleMessageSms.addMessageSms(messageSms);
-      try {
-         smsBuilder.sendMultipleSms(multipleMessageSms);
-      }
-      catch (RestClientException e) {
-         e.printStackTrace();
-      }
-   }
+//   public void sendWelcomeMail(String name, String email, String password) {
+//      if (StringUtils.isNotBlank(email)) {
+//         MailTemplate mail = new MailTemplateBuilder()
+//                  .subject("Bem vindo ao clubflex")
+//                  .template("welcome-mail.html")
+//                  .addParam("nome", name)
+//                  .addParam("senha", password)
+//                  .addParam(Constants.MAIL_SECTOR, EmailType.EMAIL_WELCOME.getDescribe())
+//                  .addParam("linkclubflex", Constants.URL_LOGIN_CLUBFLEX_B2C)
+//                  .to(email)
+//                  .build();
+//         mailService.scheduleSend(mail);
+//      }
+//   }
 
    public List<Holder> getAllHolders() {
       return holderRepository.allHolders();
@@ -211,7 +142,7 @@ public class HolderService {
          && StringUtils.isBlank(filter.getNameHolder())
          && filter.getNumCard() == null
          && filter.getDateBirth() == null) {
-         throw new ClubFlexException("Informe ao menos um filtro");
+         throw new Bolao10Exception("Informe ao menos um filtro");
       }
 
       // Pesquisa pelo Holder
@@ -226,7 +157,7 @@ public class HolderService {
 
    public List<HolderFarma> filterBasic(HolderFilter filter) {
       if (StringUtils.isBlank(filter.getCpfCnpjHolder())) {
-         throw new ClubFlexException("Informe o CPF/CNPJ do assinante");
+         throw new Bolao10Exception("Informe o CPF/CNPJ do assinante");
       }
       return holderRepository.filterBasic(filter);
    }
@@ -234,9 +165,6 @@ public class HolderService {
    @Transactional
    public void update(Holder holder) {
       holderRepository.update(holder);
-
-      // atualiza no boleto simples se for o caso
-      ticketGatewayService.updateCustomer(holder);
    }
 
    @Transactional

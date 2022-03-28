@@ -1,14 +1,17 @@
 
-package br.com.segmedic.clubflex.service;
+package br.com.bolao.bolao10.service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.DatatypeConverter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +19,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import br.com.segmedic.clubflex.domain.Holder;
-import br.com.segmedic.clubflex.domain.Subscription;
-import br.com.segmedic.clubflex.domain.User;
-import br.com.segmedic.clubflex.domain.enums.UserProfile;
-import br.com.segmedic.clubflex.model.Card;
+
+import br.com.bolao.bolao10.domain.Holder;
+import br.com.bolao.bolao10.domain.Subscription;
+import br.com.bolao.bolao10.domain.User;
+import br.com.bolao.bolao10.domain.enums.UserProfile;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.CompressionCodecs;
 import io.jsonwebtoken.JwtBuilder;
@@ -36,38 +40,12 @@ public class JWTService {
    private static final Logger LOGGER = LoggerFactory.getLogger(JWTService.class);
 
    private static final int EXPIRATION_TIME_MINUTES = 1440; // 24 horas
-   private static final int EXPIRATION_TIME__YEARS = 10; // 10 anos
 
    @Value("${custom.jwtkey}")
    private String jwtkey;
 
    @Autowired
    private SubscriptionService subscriptionService;
-
-   public String createJwtToken(Card creditCard) {
-
-      Map<String, Object> data = Maps.newHashMap();
-      data.put("name", creditCard.getName());
-      data.put("number", creditCard.getNumber());
-      data.put("validate", creditCard.getValidate());
-      data.put("securitycode", creditCard.getSecurityCode());
-
-      Date expiresAt = Date.from(LocalDateTime.now().plusYears(EXPIRATION_TIME__YEARS).atZone(ZoneId.systemDefault()).toInstant());
-
-      try {
-         JwtBuilder builder = Jwts.builder()
-                  .compressWith(CompressionCodecs.DEFLATE)
-                  .setClaims(data)
-                  .setExpiration(expiresAt)
-                  .signWith(SignatureAlgorithm.HS256, jwtkey);
-         return builder.compact();
-      }
-      catch (Exception e) {
-         LOGGER.error("Erro GRAVE gerando token...", e);
-      }
-
-      return null;
-   }
 
    public String createJwtToken(User user) {
 
@@ -115,7 +93,7 @@ public class JWTService {
 
          if (UserProfile.HOLDER.equals(user.getProfile()) || UserProfile.DEPENDENT.equals(user.getProfile())) {
             Long idSubscription = 0l;
-            List<Subscription> listSubs = subscriptionService.findSubscriptionByHolderId(claims.get("holder", Long.class));
+            List<Subscription> listSubs = new ArrayList<Subscription>();//subscriptionService.findSubscriptionByHolderId(claims.get("holder", Long.class));
             for (Subscription subscription : listSubs) {
                if (!subscription.getHolderOnlyResponsibleFinance()) {
                   idSubscription = subscription.getId();
@@ -125,27 +103,6 @@ public class JWTService {
          }
 
          return user;
-
-      }
-      catch (Exception e) {
-         LOGGER.error("Erro de segurança.", e);
-         throw new SecurityException("Token inválido ou expirado! INVALID_TOKEN");
-      }
-   }
-
-   public Card readJwtTokenCreditCard(String jwtToken) throws SecurityException {
-      try {
-         Claims claims = Jwts.parser()
-                  .setSigningKey(DatatypeConverter.parseBase64Binary(jwtkey))
-                  .parseClaimsJws(jwtToken).getBody();
-
-         Card cc = new Card();
-         cc.setName(claims.get("name", String.class));
-         cc.setNumber(claims.get("number", String.class));
-         cc.setValidate(claims.get("validate", String.class));
-         cc.setSecurityCode(claims.get("securitycode", String.class));
-
-         return cc;
 
       }
       catch (Exception e) {

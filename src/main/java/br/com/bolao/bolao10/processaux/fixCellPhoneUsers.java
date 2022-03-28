@@ -1,4 +1,4 @@
-package br.com.segmedic.clubflex.processaux;
+package br.com.bolao.bolao10.processaux;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -10,8 +10,8 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import br.com.segmedic.clubflex.domain.Holder;
-import br.com.segmedic.clubflex.service.HolderService;
+import br.com.bolao.bolao10.domain.Holder;
+import br.com.bolao.bolao10.service.HolderService;
 
 @Component
 public class fixCellPhoneUsers {

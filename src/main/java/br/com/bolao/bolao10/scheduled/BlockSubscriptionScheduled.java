@@ -1,7 +1,4 @@
-package br.com.segmedic.clubflex.scheduled;
-
-import java.math.BigInteger;
-import java.util.List;
+package br.com.bolao.bolao10.scheduled;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import br.com.segmedic.clubflex.service.SubscriptionService;
+import br.com.bolao.bolao10.service.SubscriptionService;
 
 @Component
 public class BlockSubscriptionScheduled {
@@ -27,10 +24,10 @@ public class BlockSubscriptionScheduled {
 	@Scheduled(cron = "0 15 1 * * *", zone = TIME_ZONE)
 	public void execute() {
 		try {
-			List<BigInteger> subscriptions = subscriptionService.listShouldBeBlocked();
-			subscriptions.forEach(subId->{
-				subscriptionService.block(subId.longValue());
-			});
+//			List<BigInteger> subscriptions = subscriptionService.listShouldBeBlocked();
+//			subscriptions.forEach(subId->{
+//				//subscriptionService.block(subId.longValue());
+//			});
 		} catch (Exception e) {
 			LOGGER.error("Erro na execução da Scheduled de bloqueio", e);
 		}

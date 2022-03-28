@@ -1,5 +1,5 @@
 
-package br.com.segmedic.clubflex.domain;
+package br.com.bolao.bolao10.domain;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -15,10 +15,9 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import org.springframework.format.annotation.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import br.com.segmedic.clubflex.domain.enums.Sex;
-import br.com.segmedic.clubflex.support.Strings;
+import br.com.bolao.bolao10.domain.enums.Sex;
+import br.com.bolao.bolao10.support.Strings;
 
-@Entity
 @Table(name = "holder", indexes = @Index(columnList = "cpf_cnpj"))
 public class Holder implements Serializable {
 

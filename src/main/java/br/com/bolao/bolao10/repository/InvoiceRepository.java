@@ -1,19 +1,21 @@
 
-package br.com.segmedic.clubflex.repository;
+package br.com.bolao.bolao10.repository;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import br.com.segmedic.clubflex.domain.Invoice;
-import br.com.segmedic.clubflex.domain.enums.InvoiceStatus;
-import br.com.segmedic.clubflex.domain.enums.InvoiceType;
-import br.com.segmedic.clubflex.model.SubscriptionFilter;
+
+import br.com.bolao.bolao10.domain.Invoice;
+import br.com.bolao.bolao10.domain.enums.InvoiceStatus;
+import br.com.bolao.bolao10.model.SubscriptionFilter;
 
 @Repository
 public class InvoiceRepository extends GenericRepository {
@@ -104,7 +106,6 @@ public class InvoiceRepository extends GenericRepository {
                .setParameter("tdid", invoice.getTransactId())
                .setParameter("amount", invoice.getPayAmount())
                .setParameter("statuspay", invoice.getStatus().name())
-               .setParameter("paytype", invoice.getPaymentType().name())
                .setParameter("id", invoice.getId())
                .executeUpdate();
 
@@ -188,50 +189,6 @@ public class InvoiceRepository extends GenericRepository {
       sql.append(" order by i.competenceEnd DESC ");
 
       TypedQuery<Invoice> query = em.createQuery(sql.toString(), Invoice.class);
-      query.setParameter("subscriptionId", subscriptionId);
-      query.setMaxResults(1);
-
-      try {
-         return query.getSingleResult();
-      }
-      catch (Exception e) {
-         return null;
-      }
-   }
-
-   public Invoice getLastInvoicePay(Long subscriptionId, InvoiceType type) {
-      StringBuilder sql = new StringBuilder();
-      sql.append(" select i ");
-      sql.append(" from Invoice i");
-      sql.append(" where i.status = :status ");
-      sql.append("   and i.subscription.id = :subscriptionId");
-      sql.append("   and i.type = :type 					  ");
-      sql.append(" order by i.id DESC 					  ");
-
-      TypedQuery<Invoice> query = em.createQuery(sql.toString(), Invoice.class);
-      query.setParameter("status", InvoiceStatus.PAID);
-      query.setParameter("subscriptionId", subscriptionId);
-      query.setParameter("type", type);
-      query.setMaxResults(1);
-
-      try {
-         return query.getSingleResult();
-      }
-      catch (Exception e) {
-         return null;
-      }
-   }
-
-   public Invoice getLastInvoice(Long subscriptionId, InvoiceType type) {
-      StringBuilder sql = new StringBuilder();
-      sql.append(" select i 									");
-      sql.append(" from Invoice i								");
-      sql.append(" where i.subscription.id = :subscriptionId  ");
-      sql.append(" and i.type = :type 						");
-      sql.append(" order by i.id DESC 						");
-
-      TypedQuery<Invoice> query = em.createQuery(sql.toString(), Invoice.class);
-      query.setParameter("type", type);
       query.setParameter("subscriptionId", subscriptionId);
       query.setMaxResults(1);
 

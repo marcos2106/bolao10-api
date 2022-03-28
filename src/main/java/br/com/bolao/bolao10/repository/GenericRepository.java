@@ -1,5 +1,5 @@
 
-package br.com.segmedic.clubflex.repository;
+package br.com.bolao.bolao10.repository;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

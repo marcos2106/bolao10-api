@@ -1,4 +1,4 @@
-package br.com.segmedic.clubflex.support;
+package br.com.bolao.bolao10.support;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -11,7 +11,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import br.com.segmedic.clubflex.exception.ClubFlexException;
+import br.com.bolao.bolao10.exception.Bolao10Exception;
 
 public class Cryptography {
 
@@ -34,7 +34,7 @@ public class Cryptography {
 			return encoder.encodeToString(dadoCriptografadoBytes);
 		} catch (Exception e) {
 			LOGGER.error("Erro ao tentar criptografar o valor informado para a chave especificada.", e);
-			throw new ClubFlexException("Ocorreu um erro inesperado. Favor tentar novamente mais tarde.", e);
+			throw new Bolao10Exception("Ocorreu um erro inesperado. Favor tentar novamente mais tarde.", e);
 		}
 	}
 
@@ -49,7 +49,7 @@ public class Cryptography {
 			return new String(dadoDecriptado);
 		} catch (Exception e) {
 			LOGGER.error("Erro ao tentar descriptografar o valor informado para a chave especificada.", e);
-			throw new ClubFlexException("Ocorreu um erro inesperado. Favor tentar novamente mais tarde.", e);
+			throw new Bolao10Exception("Ocorreu um erro inesperado. Favor tentar novamente mais tarde.", e);
 		}
 	}
 

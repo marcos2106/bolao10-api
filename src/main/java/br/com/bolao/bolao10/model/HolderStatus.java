@@ -1,15 +1,15 @@
 
-package br.com.segmedic.clubflex.model;
+package br.com.bolao.bolao10.model;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
-import br.com.segmedic.clubflex.domain.Dependent;
-import br.com.segmedic.clubflex.domain.enums.Sex;
-import br.com.segmedic.clubflex.domain.enums.SubscriptionStatus;
-import br.com.segmedic.clubflex.support.Strings;
+
+import br.com.bolao.bolao10.domain.enums.Sex;
+import br.com.bolao.bolao10.domain.enums.SubscriptionStatus;
+import br.com.bolao.bolao10.support.Strings;
 
 public class HolderStatus implements Serializable {
 
@@ -38,7 +38,6 @@ public class HolderStatus implements Serializable {
    private LocalDateTime updatedAt;
    private Long idSubscription;
    private SubscriptionStatus statusSubscription;
-   private List<Dependent> listDependents;
 
    public Long getId() {
       return id;
@@ -202,14 +201,6 @@ public class HolderStatus implements Serializable {
          return null;
       }
       return String.format("%s, %s - %s-%s", this.address, this.complementAddress, this.city, this.uf);
-   }
-
-   public List<Dependent> getListDependents() {
-      return listDependents;
-   }
-
-   public void setListDependents(List<Dependent> listDependents) {
-      this.listDependents = listDependents;
    }
 
    public Long getIdSubscription() {

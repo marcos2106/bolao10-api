@@ -15,7 +15,7 @@ This file is part of PorExtenso.
 Copyright 2008, Marcelo Criscuolo.    
 */
 
-package br.com.segmedic.clubflex.support;
+package br.com.bolao.bolao10.support;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

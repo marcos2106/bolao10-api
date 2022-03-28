@@ -1,4 +1,4 @@
-package br.com.segmedic.clubflex;
+package br.com.bolao.bolao10;
 
 import java.io.IOException;
 import java.util.Locale;

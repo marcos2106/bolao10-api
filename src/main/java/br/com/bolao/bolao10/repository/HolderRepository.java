@@ -1,36 +1,32 @@
 
-package br.com.segmedic.clubflex.repository;
+package br.com.bolao.bolao10.repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import br.com.segmedic.clubflex.domain.ClubCard;
-import br.com.segmedic.clubflex.domain.Dependent;
-import br.com.segmedic.clubflex.domain.Holder;
-import br.com.segmedic.clubflex.domain.enums.Sex;
-import br.com.segmedic.clubflex.domain.enums.SubscriptionStatus;
-import br.com.segmedic.clubflex.model.HolderFarma;
-import br.com.segmedic.clubflex.model.HolderFilter;
-import br.com.segmedic.clubflex.model.HolderStatus;
-import br.com.segmedic.clubflex.service.SubscriptionService;
+
+import br.com.bolao.bolao10.domain.Holder;
+import br.com.bolao.bolao10.domain.enums.Sex;
+import br.com.bolao.bolao10.model.HolderFarma;
+import br.com.bolao.bolao10.model.HolderFilter;
+import br.com.bolao.bolao10.model.HolderStatus;
+import br.com.bolao.bolao10.service.SubscriptionService;
 
 @Repository
 public class HolderRepository extends GenericRepository {
 
    @Autowired
    private EntityManager em;
-
-   @Autowired
-   private ClubCardRepository clubCardRepository;
 
    @Autowired
    private SubscriptionService subscriptionService;
@@ -147,24 +143,7 @@ public class HolderRepository extends GenericRepository {
          holder.setUpdatedAt(
             (getStringValue(o, 19) != null && !getStringValue(o, 19).equals("")) ? LocalDateTime.parse(getStringValue(o, 19), formatter)
                : null);
-         holder.setStatusSubscription(
-            (getStringValue(o, 20) != null && !getStringValue(o, 20).equals("")) ? SubscriptionStatus.valueOf(getStringValue(o, 20))
-               : null);
-
-         if (getStringValue(o, 21) != null) {
-            Long subscriptionId = new Long(getStringValue(o, 21));
-            List<Dependent> listaDependente = subscriptionService.listDependentBySubscriptionId(subscriptionId);
-
-            listaDependente.stream().map(dep -> {
-               ClubCard cc = clubCardRepository.findByDependentId(dep.getId());
-               dep.setClubCard(cc.getId());
-               dep.setCpfHolder(getStringValue(o, 3));
-               return dep;
-            }).collect(Collectors.toList());
-
-            holder.setListDependents(listaDependente);
-         }
-
+         
          holdersStatus.add(holder);
       });
       try {
@@ -229,9 +208,6 @@ public class HolderRepository extends GenericRepository {
          holder.setUpdatedAt(
             (getStringValue(o, 8) != null && !getStringValue(o, 8).equals("")) ? LocalDateTime.parse(getStringValue(o, 8), formatter)
                : null);
-         holder.setStatusSubscription(
-            (getStringValue(o, 9) != null && !getStringValue(o, 9).equals("")) ? SubscriptionStatus.valueOf(getStringValue(o, 9))
-               : null);
          holder.setIdSubscription(getLongValue(o, 10));
          holder.setIdClubCard(getStringValue(o, 11));
          holder.setStatusClubCard(getStringValue(o, 12));
@@ -273,17 +249,6 @@ public class HolderRepository extends GenericRepository {
          holder.setName(getStringValue(o, 2));
          holder.setCpfCnpj(getStringValue(o, 3));
          holder.setIsHolder(getBooleanValue(o, 4));
-         holder.setStatus(
-            (getStringValue(o, 5) != null && !getStringValue(o, 5).equals("")) ? SubscriptionStatus.valueOf(getStringValue(o, 5)) : null);
-
-         holder.setIdSubscription(getLongValue(o, 6));
-         if (getStringValue(o, 6) != null && holder.getIsHolder()) {
-            Long subscriptionId = new Long(getStringValue(o, 6));
-            List<Dependent> listaDependente = subscriptionService.listDependentBySubscriptionId(subscriptionId);
-            holder.setListDependents(listaDependente);
-         }
-         holder.setIdClubcard(getLongValue(o, 7));
-
          holdersFarma.add(holder);
       });
       try {

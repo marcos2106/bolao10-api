@@ -1,12 +1,12 @@
 
-package br.com.segmedic.clubflex.domain;
+package br.com.bolao.bolao10.domain;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,18 +18,16 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import org.springframework.format.annotation.DateTimeFormat;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import br.com.segmedic.clubflex.domain.enums.InvoiceStatus;
-import br.com.segmedic.clubflex.domain.enums.InvoiceType;
-import br.com.segmedic.clubflex.domain.enums.PaymentType;
-import br.com.segmedic.clubflex.support.NumberUtils;
 
-@Entity
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import br.com.bolao.bolao10.domain.enums.InvoiceStatus;
+import br.com.bolao.bolao10.support.NumberUtils;
+
 @Table(name = "invoice")
 public class Invoice implements Serializable {
 
@@ -51,23 +49,6 @@ public class Invoice implements Serializable {
    @ManyToOne(cascade = CascadeType.MERGE, optional = false, fetch = FetchType.EAGER)
    @JoinColumn(name = "idsubscription", nullable = false)
    private Subscription subscription; // assinatura na qual a fatura pertence
-
-   @JsonIgnore
-   @ManyToOne(cascade = CascadeType.MERGE, optional = true, fetch = FetchType.EAGER)
-   @JoinColumn(name = "idcredit_card", nullable = true)
-   private CreditCard creditCard; // cartao usado quando type for cartao
-
-   @Enumerated(EnumType.STRING)
-   @Column(name = "invoice_type", nullable = false, columnDefinition = "ENUM('AGREEMENT','DEFAULT') default 'DEFAULT'")
-   private InvoiceType type; // default ou de acordo
-
-   @Enumerated(EnumType.STRING)
-   @Column(name = "payment_type", nullable = false, columnDefinition = "ENUM('TICKET','CREDIT_CARD','DEBIT_CARD') default 'TICKET'")
-   private PaymentType paymentType; // tipo de pagamento
-
-   @Enumerated(EnumType.STRING)
-   @Column(name = "new_payment_type", nullable = true, columnDefinition = "ENUM('TICKET','CREDIT_CARD','DEBIT_CARD') default 'TICKET'")
-   private PaymentType newPaymentType; // tipo de pagamento para ser alterado
 
    @Enumerated(EnumType.STRING)
    @Column(name = "status", nullable = false,
@@ -109,9 +90,6 @@ public class Invoice implements Serializable {
 
    @Column(name = "iduser", nullable = true, columnDefinition = "BIGINT(20)")
    private Long userResponsiblePayment; // usuario responsável pelo estorno, cancelamento ou pagamneto da fatura
-
-   @OneToMany(mappedBy = "invoice", targetEntity = InvoiceDetail.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-   private Set<InvoiceDetail> details; // detalhes da fatura
 
    @Column(name = "nfe_id", nullable = true, columnDefinition = "VARCHAR(60)")
    private String nfeId;
@@ -171,30 +149,6 @@ public class Invoice implements Serializable {
 
    public void setSubscription(Subscription subscription) {
       this.subscription = subscription;
-   }
-
-   public CreditCard getCreditCard() {
-      return creditCard;
-   }
-
-   public void setCreditCard(CreditCard creditCard) {
-      this.creditCard = creditCard;
-   }
-
-   public InvoiceType getType() {
-      return type;
-   }
-
-   public void setType(InvoiceType type) {
-      this.type = type;
-   }
-
-   public PaymentType getPaymentType() {
-      return paymentType;
-   }
-
-   public void setPaymentType(PaymentType paymentType) {
-      this.paymentType = paymentType;
    }
 
    public InvoiceStatus getStatus() {
@@ -299,14 +253,6 @@ public class Invoice implements Serializable {
       this.userResponsiblePayment = userResponsiblePayment;
    }
 
-   public Set<InvoiceDetail> getDetails() {
-      return details;
-   }
-
-   public void setDetails(Set<InvoiceDetail> details) {
-      this.details = details;
-   }
-
    public BigDecimal getPayAmount() {
       return payAmount;
    }
@@ -393,14 +339,6 @@ public class Invoice implements Serializable {
 
    public void setInstallmentNumber(Integer installmentNumber) {
       this.installmentNumber = installmentNumber;
-   }
-
-   public PaymentType getNewPaymentType() {
-      return newPaymentType;
-   }
-
-   public void setNewPaymentType(PaymentType newPaymentType) {
-      this.newPaymentType = newPaymentType;
    }
 
    public String getJustificationDenied() {

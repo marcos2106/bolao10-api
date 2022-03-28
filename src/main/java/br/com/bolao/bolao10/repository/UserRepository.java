@@ -1,14 +1,17 @@
 
-package br.com.segmedic.clubflex.repository;
+package br.com.bolao.bolao10.repository;
 
 import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import br.com.segmedic.clubflex.domain.User;
-import br.com.segmedic.clubflex.domain.enums.UserProfile;
-import br.com.segmedic.clubflex.support.Cryptography;
+
+import br.com.bolao.bolao10.domain.User;
+import br.com.bolao.bolao10.domain.enums.UserProfile;
+import br.com.bolao.bolao10.support.Cryptography;
 
 @Repository
 public class UserRepository extends GenericRepository {

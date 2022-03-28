@@ -1,19 +1,19 @@
 
-package br.com.segmedic.clubflex.model;
+package br.com.bolao.bolao10.model;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.format.annotation.DateTimeFormat;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
-import br.com.segmedic.clubflex.domain.enums.PaymentType;
 
 public class SubscriptionDetail implements Serializable {
 
    private static final long serialVersionUID = -3545389088680243399L;
 
    private Long subscriptionId;
-   private PaymentType paymentType;
    private String holderName;
    private String status;
    @DateTimeFormat(pattern = "dd/MM/yyyy")
@@ -31,14 +31,6 @@ public class SubscriptionDetail implements Serializable {
 
    public void setSubscriptionId(Long subscriptionId) {
       this.subscriptionId = subscriptionId;
-   }
-
-   public PaymentType getPaymentType() {
-      return paymentType;
-   }
-
-   public void setPaymentType(PaymentType paymentType) {
-      this.paymentType = paymentType;
    }
 
    public String getHolderName() {
