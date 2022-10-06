@@ -10,5 +10,5 @@ import br.com.bolao.bolao10.domain.enums.UserProfile;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RequireAuthentication {
-	UserProfile[] value() default UserProfile.ALL;
+	UserProfile[] value() default UserProfile.USER;
 }

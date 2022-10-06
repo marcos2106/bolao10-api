@@ -20,16 +20,12 @@ import br.com.bolao.bolao10.domain.enums.Sex;
 import br.com.bolao.bolao10.model.HolderFarma;
 import br.com.bolao.bolao10.model.HolderFilter;
 import br.com.bolao.bolao10.model.HolderStatus;
-import br.com.bolao.bolao10.service.SubscriptionService;
 
 @Repository
 public class HolderRepository extends GenericRepository {
 
    @Autowired
    private EntityManager em;
-
-   @Autowired
-   private SubscriptionService subscriptionService;
 
    public Holder findByCpfCnpj(String cpfCnpj) {
       StringBuilder sql = new StringBuilder();

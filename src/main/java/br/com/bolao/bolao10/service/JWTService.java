@@ -3,9 +3,7 @@ package br.com.bolao.bolao10.service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -14,7 +12,6 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -23,9 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import br.com.bolao.bolao10.domain.Holder;
-import br.com.bolao.bolao10.domain.Subscription;
-import br.com.bolao.bolao10.domain.User;
+import br.com.bolao.bolao10.domain.Usuario;
 import br.com.bolao.bolao10.domain.enums.UserProfile;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.CompressionCodecs;
@@ -44,19 +39,14 @@ public class JWTService {
    @Value("${custom.jwtkey}")
    private String jwtkey;
 
-   @Autowired
-   private SubscriptionService subscriptionService;
 
-   public String createJwtToken(User user) {
+   public String createJwtToken(Usuario user) {
 
       Map<String, Object> dados = Maps.newHashMap();
       dados.put("id", user.getId());
-      dados.put("name", user.getName());
-      dados.put("profile", user.getProfile());
-
-      if (user.getHolder() != null) {
-         dados.put("holder", user.getHolder().getId());
-      }
+      dados.put("nome", user.getNome());
+      dados.put("email", user.getEmail());
+      dados.put("perfil", user.getPerfil());
 
       Date expiresAt = Date.from(LocalDateTime.now().plusMinutes(EXPIRATION_TIME_MINUTES).atZone(ZoneId.systemDefault()).toInstant());
 
@@ -75,35 +65,19 @@ public class JWTService {
       return null;
    }
 
-   public User readJwtTokenUser(String jwtToken) throws SecurityException {
+   public Usuario readJwtTokenUser(String jwtToken) throws SecurityException {
       try {
          Claims claims = Jwts.parser()
                   .setSigningKey(DatatypeConverter.parseBase64Binary(jwtkey))
                   .parseClaimsJws(jwtToken).getBody();
 
-         User user = new User();
+         Usuario user = new Usuario();
          user.setId(claims.get("id", Long.class));
-         user.setName(claims.get("name", String.class));
-         user.setProfile(UserProfile.valueOf(claims.get("profile", String.class)));
-
-         if (UserProfile.HOLDER.equals(user.getProfile())) {
-            user.setHolder(new Holder());
-            user.getHolder().setId(claims.get("holder", Long.class));
-         }
-
-         if (UserProfile.HOLDER.equals(user.getProfile()) || UserProfile.DEPENDENT.equals(user.getProfile())) {
-            Long idSubscription = 0l;
-            List<Subscription> listSubs = new ArrayList<Subscription>();//subscriptionService.findSubscriptionByHolderId(claims.get("holder", Long.class));
-            for (Subscription subscription : listSubs) {
-               if (!subscription.getHolderOnlyResponsibleFinance()) {
-                  idSubscription = subscription.getId();
-               }
-            }
-            user.setIdSubscription(idSubscription);
-         }
+         user.setNome(claims.get("nome", String.class));
+         user.setEmail(claims.get("email", String.class));
+         user.setPerfil(UserProfile.valueOf(claims.get("perfil", String.class)));
 
          return user;
-
       }
       catch (Exception e) {
          LOGGER.error("Erro de segurança.", e);
@@ -111,7 +85,7 @@ public class JWTService {
       }
    }
 
-   public User readJwtToken(HttpServletRequest request) throws SecurityException {
+   public Usuario readJwtToken(HttpServletRequest request) throws SecurityException {
       if (request == null) {
          throw new SecurityException("Token não informado. INVALID_TOKEN");
       }
@@ -126,10 +100,10 @@ public class JWTService {
    }
 
    public void readJwtTokenAndValidateProfile(HttpServletRequest request, UserProfile[] profile) {
-      User user = readJwtToken(request);
+      Usuario user = readJwtToken(request);
       AtomicBoolean hasAccess = new AtomicBoolean(false);
       Lists.newArrayList(profile).forEach(p -> {
-         if (UserProfile.ALL.equals(p) || user.getProfile().equals(p)) {
+         if (user.getPerfil().equals(p)) {
             hasAccess.set(true);
          }
       });

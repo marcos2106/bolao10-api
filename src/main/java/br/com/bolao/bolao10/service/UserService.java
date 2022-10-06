@@ -1,23 +1,16 @@
 
 package br.com.bolao.bolao10.service;
 
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.com.bolao.bolao10.domain.User;
+import br.com.bolao.bolao10.domain.Usuario;
 import br.com.bolao.bolao10.domain.enums.UserProfile;
 import br.com.bolao.bolao10.exception.Bolao10Exception;
-import br.com.bolao.bolao10.model.RememberPasswordRequest;
 import br.com.bolao.bolao10.repository.UserRepository;
-import br.com.bolao.bolao10.support.CNPJValidator;
-import br.com.bolao.bolao10.support.CPFValidator;
-import br.com.bolao.bolao10.support.Cryptography;
 import br.com.bolao.bolao10.support.EmailValidator;
 import br.com.bolao.bolao10.support.Strings;
 
@@ -25,184 +18,87 @@ import br.com.bolao.bolao10.support.Strings;
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 public class UserService {
 
-   @Autowired
-   private UserRepository userRepository;
+	@Autowired
+	private UserRepository userRepository;
 
-   @Autowired
-   private JWTService jwtService;
+	@Autowired
+	private JWTService jwtService;
 
-   @Value("${zenvia.api.remetente}")
-   private String remetente;
+	// @Autowired
+	// private ClubFlexCardService clubFlexCardService;
 
-   @Value("${zenvia.api.username}")
-   private String username;
+	// @Autowired
+	// private SubscriptionRepository subscriptionRepository;
 
-   @Value("${zenvia.api.password}")
-   private String password;
+	public String login(String login, String passwd) {
+		if (StringUtils.isBlank(login) || StringUtils.isBlank(passwd)) {
+			throw new Bolao10Exception("Login ou Senha não informado.");
+		}
 
-   // @Autowired
-   // private ClubFlexCardService clubFlexCardService;
+		Usuario user = userRepository.getUserByLoginAndPasswd(login, passwd);
 
-   // @Autowired
-   // private SubscriptionRepository subscriptionRepository;
+		if (user == null) {
+			throw new Bolao10Exception("Login ou Senha inválido.");
+		}
+		return jwtService.createJwtToken(user);
+	}
 
-   public String externalLogin(String login, String passwd) {
-      if (StringUtils.isBlank(login) || StringUtils.isBlank(passwd)) {
-         throw new Bolao10Exception("Login ou Senha não informado.");
-      }
+	@Transactional
+	public String backofficeLogin(String login, String password) {
 
-      // tentar como titular
-      User user = userRepository.getUserHolderByLoginAndPasswd(login, passwd);
+		if (StringUtils.isBlank(login) || StringUtils.isBlank(password)) {
+			throw new Bolao10Exception("Login ou Senha não informado.");
+		}
 
-      // nao foi, tentar como dependente
-      if (user == null) {
-         user = userRepository.getUserDependentByLoginAndPasswd(login, passwd);
-      }
+		//User user = userRepository.getUserByLoginAndPasswd(login, password, true);
+		Usuario user = new Usuario();
+		user.setId(123L);
+		user.setNome("Teste");
+		user.setPerfil(UserProfile.ADMIN);
 
-      // se não foi como titular e dependente login ou senha inválido
-      if (user == null) {
-         throw new Bolao10Exception("Login ou Senha inválido.");
-      }
+		return jwtService.createJwtToken(user);
+	}
 
-      return jwtService.createJwtToken(user);
-   }
+	@Transactional
+	public Usuario save(Usuario user) {
+		String tempPASS = Strings.generateTempPassword();
+		if (StringUtils.isBlank(user.getSenha())) {
+			user.setSenha(tempPASS);
+		}
+		user.setAtivo(Boolean.TRUE);
 
-   @Transactional
-   public String backofficeLogin(String login, String password) {
+		// Validar existencia para Atendente e Gerente
+		if (UserProfile.ADMIN.equals(user.getPerfil())) {
 
-      // gerar cartoes clubflex - Solucao paleativa para gerar carteirinhas ao logar na aplicacao
-      // Subscription sub = subscriptionRepository.findById(19368L);
-      // clubFlexCardService.generateAllClubFlexCards(sub);
-      // subscriptionRepository.save(sub);
+			Usuario registeredUser = userRepository.findByLogin(user.getEmail());
 
-      if (StringUtils.isBlank(login) || StringUtils.isBlank(password)) {
-         throw new Bolao10Exception("Login ou Senha não informado.");
-      }
+			if (registeredUser != null && registeredUser.getPerfil().equals(UserProfile.USER)) {
+				throw new Bolao10Exception("Usuário já cadastrado!");
+			}
+		}
+		return userRepository.save(user);
+	}
 
-      User user = userRepository.getUserByLoginAndPasswd(login, password, true);
+	@Transactional
+	public Usuario update(Usuario user) {
+		Usuario userObj = userRepository.findById(user.getId());
+		userObj.setNome(user.getNome());
+		userObj.setAtivo(user.getAtivo());
+		userObj.setPerfil(user.getPerfil());
+		userObj.setEmail(user.getEmail());
+		return userRepository.save(userObj);
+	}
 
-      if (user == null) {
-         throw new Bolao10Exception("Login ou Senha inválido.");
-      }
+	public Usuario findUserById(Long id) {
+		return userRepository.findById(id);
+	}
 
-      if (UserProfile.HOLDER.equals(user.getProfile()) || UserProfile.DEPENDENT.equals(user.getProfile())) {
-         throw new Bolao10Exception("Login ou Senha inválido. (Acesso externo somente).");
-      }
-
-      return jwtService.createJwtToken(user);
-   }
-
-   @Transactional
-   public User save(User user) {
-      String tempPASS = Strings.generateTempPassword();
-      if (StringUtils.isBlank(user.getPassword())) {
-         user.setPassword(tempPASS);
-      }
-      user.setPassword(Cryptography.encrypt(user.getPassword()));
-      user.setIsActive(Boolean.TRUE);
-      user.setLogin(Strings.removeNoNumericChars(user.getLogin()));
-
-      // Validar existencia para Atendente e Gerente
-      if (UserProfile.ATTENDANT.equals(user.getProfile()) || UserProfile.MANAGER.equals(user.getProfile())
-         || UserProfile.SUPERVISOR.equals(user.getProfile())
-         || UserProfile.BROKER.equals(user.getProfile())) {
-
-         User registeredUser = userRepository.findByLogin(user.getLogin());
-
-         if (registeredUser != null && registeredUser.getProfile().equals(UserProfile.HOLDER)
-            && registeredUser.getProfile().equals(UserProfile.DEPENDENT)) {
-            throw new Bolao10Exception("Usuário já cadastrado!");
-         }
-      }
-
-      return userRepository.save(user);
-   }
-
-   @Transactional
-   public User update(User user) {
-      User userObj = userRepository.findById(user.getId());
-      userObj.setName(user.getName());
-      userObj.setIsActive(user.getIsActive());
-      userObj.setProfile(user.getProfile());
-      userObj.setEmail(user.getEmail());
-      return userRepository.save(userObj);
-   }
-
-   public User findUserById(Long id) {
-      return userRepository.findById(id);
-   }
-
-   public User findUserByHolderId(Long id) {
-      return userRepository.findByHolderId(id);
-   }
-
-   public User findUserByDependentId(Long id) {
-      return userRepository.findUserByDependentId(id);
-   }
-
-   public String loginByHolder(Long id) {
-      if (id == null) {
-         throw new Bolao10Exception("Id do titular não informado.");
-      }
-      return jwtService.createJwtToken(findUserByHolderId(id));
-   }
-
-   @Transactional
-   public String rememberPassword(RememberPasswordRequest request) {
-
-      validarPreenchimento(request.getLogin());
-
-      validarCPFCNPJValido(request.getLogin());
-
-      List<User> users = userRepository.findByLoginList(request.getLogin());
-
-      String email = null;
-
-      for (User user : users) {
-         validarUsuarioExistente(user);
-
-         try {
-
-            String newpasswd = Strings.generateTempPassword();
-            user.setPassword(Cryptography.encrypt(newpasswd));
-            userRepository.save(user);
-
-            if (user.getEmail() != null && !user.getEmail().equals("")) {
-               email = user.getEmail();
-            }
-            else if (user.getHolder().getEmail() != null && !user.getHolder().getEmail().equals("")) {
-               email = user.getHolder().getEmail();
-            }
-
-//            if (email != null) {
-//               MailTemplate mail = new MailTemplateBuilder()
-//                        .subject("Solicitação de senha clubflex")
-//                        .template("remember-passwd.html")
-//                        .addParam("nome", user.getName())
-//                        .addParam("senha", newpasswd)
-//                        .addParam(Constants.MAIL_SECTOR, EmailType.EMAIL_GERAL.getDescribe())
-//                        .to(email)
-//                        .build();
-//
-//               mailService.scheduleSend(mail);
-//               email = "Email: ".concat(email);
-//
-//            }
-
-         }
-         catch (Exception e) {
-            throw new Bolao10Exception("Erro ao enviar e-mail com a nova senha. Contate nosso SAC.");
-         }
-      }
-      return email;
-   }
-
+	/*
    private void validarPreenchimento(String login) {
       if (StringUtils.isBlank(login)) {
          throw new Bolao10Exception("Preencha seu CPF/CNPJ.");
       }
    }
-
    private void validarCPFCNPJValido(String login) {
       if (login.length() > 14) {
          if (!CNPJValidator.isValido(login)) {
@@ -216,76 +112,80 @@ public class UserService {
       }
    }
 
-   private void validarUsuarioExistente(User user) {
+   private void validarUsuarioExistente(Usuario user) {
       if (user == null) {
          throw new Bolao10Exception("Usuário não encontrado.");
       }
    }
+	 */
 
-   @SuppressWarnings("unused")
-   private void validaEmailUsuario(String email) {
-      if (StringUtils.isBlank(email)) {
-         throw new Bolao10Exception("E-mail não está cadastrado.");
-      }
-   }
+	@SuppressWarnings("unused")
+	private void validaEmailUsuario(String email) {
+		if (StringUtils.isBlank(email)) {
+			throw new Bolao10Exception("E-mail não está cadastrado.");
+		}
+	}
 
-   @Transactional
-   public void updateMail(Long userId, String mail) {
-      if (StringUtils.isBlank(mail)) {
-         throw new Bolao10Exception("E-mail não informado.");
-      }
-      if (!EmailValidator.isValido(mail)) {
-         throw new Bolao10Exception("E-mail inválido. Informe um e-mail válido.");
-      }
-      User user = findUserById(userId);
-      if (UserProfile.HOLDER.equals(user.getProfile())) {
-         user.getHolder().setEmail(mail);
-      }
-      else {
-         throw new Bolao10Exception("Usuário não suportado.");
-      }
-      userRepository.merge(user);
-   }
+	@Transactional
+	public void updateMail(Long userId, String mail) {
+		if (StringUtils.isBlank(mail)) {
+			throw new Bolao10Exception("E-mail não informado.");
+		}
+		if (!EmailValidator.isValido(mail)) {
+			throw new Bolao10Exception("E-mail inválido. Informe um e-mail válido.");
+		}
+		Usuario user = findUserById(userId);
+		if (user == null)
+			throw new Bolao10Exception("Usuário não encontrado.");
 
-   @Transactional
-   public void updatePasswd(Long userId, String passwd) {
-      if (StringUtils.isBlank(passwd)) {
-         throw new Bolao10Exception("Nova senha não informada.");
-      }
-      if (passwd.length() < 6) {
-         throw new Bolao10Exception("Senha deve ter ao menos 6 caracteres.");
-      }
+		user.setEmail(mail);
+		userRepository.merge(user);
+	}
 
-      User user = findUserById(userId);
-      user.setPassword(Cryptography.encrypt(passwd));
-      userRepository.merge(user);
-   }
+	@Transactional
+	public void updatePasswd(Long userId, String passwd) {
+		if (StringUtils.isBlank(passwd)) {
+			throw new Bolao10Exception("Nova senha não informada.");
+		}
+		if (passwd.length() < 6) {
+			throw new Bolao10Exception("Senha deve ter ao menos 6 caracteres.");
+		}
+		Usuario user = findUserById(userId);
+		user.setSenha(passwd);
+		userRepository.merge(user);
+	}
 
-   public List<User> findByName(String name) {
-      if (StringUtils.isBlank(name)) {
-         throw new Bolao10Exception("Nome não informado.");
-      }
-      return userRepository.findByName(name);
-   }
-
-   public List<User> listAll() {
-      return userRepository.listAll();
-   }
-
-   @Transactional
-   public void deleteUserByDependente(Long dependentId) {
-      User user = findUserByDependentId(dependentId);
-      if (user != null) {
-         userRepository.delete(user);
-      }
-   }
-
-   @Transactional
-   public void deleteUserByHolder(Long holderId) {
-      User user = findUserByHolderId(holderId);
-      if (user != null) {
-         userRepository.delete(user);
-      }
-   }
+	@Transactional
+	public void trocarSenha(Usuario user) {
+		
+		if (StringUtils.isBlank(user.getSenha())) {
+			throw new Bolao10Exception("Senha não preenchida.");
+		}
+		if (StringUtils.isBlank(user.getSenhaanterior())) {
+			throw new Bolao10Exception("Senha anterior não preenchida.");
+		}
+		if (StringUtils.isBlank(user.getConfirmarsenha())) {
+			throw new Bolao10Exception("Confirmação de senha não preenchida.");
+		}
+		if (!user.getConfirmarsenha().equalsIgnoreCase(user.getSenha())) {
+			throw new Bolao10Exception("Nova senha diferente da confirmação!");
+		}
+		if (user.getSenhaanterior().length() != 8) {
+			throw new Bolao10Exception("Senha precisa ter 8 dígitos.");
+		}
+		if (user.getSenha().length() != 8) {
+			throw new Bolao10Exception("Nova senha precisa ter 8 dígitos.");
+		}
+		Usuario userPersistente = findUserById(user.getId());
+		if (userPersistente == null)
+			throw new Bolao10Exception("Usuário não encontrado.");
+		
+		Usuario userLogado = userRepository.getUserByLoginAndPasswd(userPersistente.getEmail(), user.getSenhaanterior());
+		if (userLogado == null) {
+			throw new Bolao10Exception("Senha inválida.");
+		}
+		userPersistente.setSenha(user.getSenha());
+		userRepository.save(userPersistente);
+	}
 
 }

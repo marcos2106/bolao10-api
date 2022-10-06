@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -81,7 +80,7 @@ public class Subscription implements Serializable {
 
    @ManyToOne(cascade = CascadeType.MERGE, optional = true, fetch = FetchType.EAGER)
    @JoinColumn(name = "iduser", nullable = true)
-   private User user;
+   private Usuario user;
 
    @Column(name = "holder_only_reponsible_financial", nullable = false, columnDefinition = "CHAR(1) default '0'")
    private Boolean holderOnlyResponsibleFinance = false;
@@ -203,11 +202,11 @@ public class Subscription implements Serializable {
       this.dateLastCompetence = dateLastCompetence;
    }
 
-   public User getUser() {
+   public Usuario getUser() {
       return user;
    }
 
-   public void setUser(User user) {
+   public void setUser(Usuario user) {
       this.user = user;
    }
 

@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import br.com.bolao.bolao10.domain.User;
+import br.com.bolao.bolao10.domain.Usuario;
 import br.com.bolao.bolao10.model.StandardResponse;
 import br.com.bolao.bolao10.service.JWTService;
 
@@ -22,7 +22,7 @@ public class BaseRest {
       return ResponseEntity.ok().body(new StandardResponse(HttpStatus.OK.value(), null, null, object));
    }
 
-   protected User getUserToken(HttpServletRequest request) {
+   protected Usuario getUserToken(HttpServletRequest request) {
       return jwtService.readJwtToken(request);
    }
 

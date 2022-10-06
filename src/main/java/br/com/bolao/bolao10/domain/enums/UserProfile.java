@@ -1,13 +1,8 @@
 package br.com.bolao.bolao10.domain.enums;
 
 public enum UserProfile {
-      MANAGER("Gerente"),
-      ATTENDANT("Atendente"),
-      BROKER("Corretor"),
-      HOLDER("Titular"),
-      DEPENDENT("Dependente"),
-      SUPERVISOR("Supervisor"),
-      ALL("Todos");
+      ADMIN("Admin"),
+      USER("Usuário");
 
    private String describe;
 

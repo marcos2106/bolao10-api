@@ -152,6 +152,13 @@ public class Strings {
         }
     }
 
+	public static String formatTelefone(String telefone) {
+		if(telefone != null) {
+			return formatString(telefone, "(##) #####-####");
+		}
+		return "";
+	}
+
 	public static String formatCPF(String cpfCnpj) {
 		if(cpfCnpj != null) {
 			return formatString(cpfCnpj, "###.###.###-##");

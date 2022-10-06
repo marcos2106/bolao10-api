@@ -9,7 +9,6 @@ import java.time.temporal.ChronoUnit;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -160,9 +159,9 @@ public class Invoice implements Serializable {
    }
 
    public BigDecimal getAmount() {
-      if (!InvoiceStatus.PAID.equals(this.status) && isOutDate()) {
-         return NumberUtils.calculateTax(this.dueDate, this.amount);
-      }
+//      if (!InvoiceStatus.PAID.equals(this.status) && isOutDate()) {
+//         return NumberUtils.calculateTax(this.dueDate, this.amount);
+//      }
       return amount;
    }
 
@@ -266,7 +265,7 @@ public class Invoice implements Serializable {
       // de vencimento)
       if (this.status.equals(InvoiceStatus.PAID) && this.getPayAmount() != null
          && this.dueDate.isBefore(this.paymentDate)) {
-         BigDecimal amoutWithTax = NumberUtils.calculateTax(this.dueDate, this.amount);
+         BigDecimal amoutWithTax = BigDecimal.ZERO;// NumberUtils.calculateTax(this.dueDate, this.amount);
          return amoutWithTax.subtract(this.getOriginalAmount());
       }
       return BigDecimal.ZERO;
