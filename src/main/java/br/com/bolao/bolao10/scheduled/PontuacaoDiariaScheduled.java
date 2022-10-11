@@ -21,8 +21,8 @@ public class PontuacaoDiariaScheduled {
 	 * Atualizar os dados de pontuação do ranking de cada usuário
 	 * 
 	 */
-	//roda 1:15 da madruga
-	@Scheduled(cron = "0 20 22 * * *", zone = TIME_ZONE)
+	//roda 19h (após todos os jogos)
+	@Scheduled(cron = "0 0 19 * * *", zone = TIME_ZONE)
 	public void execute() {
 		try {
 			bolaoService.atualizarPontuacaoDiaria();

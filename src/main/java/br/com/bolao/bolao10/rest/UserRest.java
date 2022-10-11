@@ -30,10 +30,10 @@ public class UserRest extends BaseRest {
    public @ResponseBody ResponseEntity<?> login(@RequestBody UserLoginRequest request) {
       return createObjectReturn(userService.login(request.getLogin(), request.getPassword()));
    }
-
-   @PostMapping(value = "/user/backoffice/login", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-   public @ResponseBody ResponseEntity<?> backofficeLogin(@RequestBody UserLoginRequest request) {
-      return createObjectReturn(userService.backofficeLogin(request.getLogin(), request.getPassword()));
+   
+   @PostMapping(value = "/user/novasenha", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+   public @ResponseBody ResponseEntity<?> novaSenha(@RequestBody UserLoginRequest usuarioRequest) {
+	   return createObjectReturn(userService.novaSenha(usuarioRequest));
    }
 
    @GetMapping(value = "/user/data", produces = MediaType.APPLICATION_JSON_VALUE)

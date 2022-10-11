@@ -37,6 +37,11 @@ public class HomeRest extends BaseRest {
 	public @ResponseBody ResponseEntity<?> carregarPartidas() {
 		return createObjectReturn(homeService.carregarPartidas());
 	}
+	
+	@GetMapping(value = "/durante/partidas/anteriores", produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody ResponseEntity<?> carregarPartidasAnteriores() {
+		return createObjectReturn(homeService.carregarPartidasAnteriores());
+	}
 
 	@GetMapping(value = "/durante/ranking", produces = MediaType.APPLICATION_JSON_VALUE)
 	public @ResponseBody ResponseEntity<?> carregarRanking() {

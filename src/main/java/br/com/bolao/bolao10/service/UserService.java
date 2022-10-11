@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.com.bolao.bolao10.domain.Usuario;
 import br.com.bolao.bolao10.domain.enums.UserProfile;
 import br.com.bolao.bolao10.exception.Bolao10Exception;
+import br.com.bolao.bolao10.model.UserLoginRequest;
 import br.com.bolao.bolao10.repository.UserRepository;
 import br.com.bolao.bolao10.support.EmailValidator;
 import br.com.bolao.bolao10.support.Strings;
@@ -39,6 +40,9 @@ public class UserService {
 
 		if (user == null) {
 			throw new Bolao10Exception("Login ou Senha inválido.");
+		}
+		if (user.getPrimeiro()) {
+			return "primeiro$"+ user.getId();
 		}
 		return jwtService.createJwtToken(user);
 	}
@@ -186,6 +190,31 @@ public class UserService {
 		}
 		userPersistente.setSenha(user.getSenha());
 		userRepository.save(userPersistente);
+	}
+
+	@Transactional
+	public String novaSenha(UserLoginRequest usuarioRequest) {
+		
+		if (StringUtils.isBlank(usuarioRequest.getNovaSenha())) {
+			throw new Bolao10Exception("Nova senha não preenchida.");
+		}
+		if (StringUtils.isBlank(usuarioRequest.getConfirmarSenha())) {
+			throw new Bolao10Exception("Confirmação da senha não preenchida.");
+		}
+		if (!usuarioRequest.getNovaSenha().equalsIgnoreCase(usuarioRequest.getConfirmarSenha())) {
+			throw new Bolao10Exception("Nova senha e a confirmação estão diferentes!");
+		}
+		Usuario user = userRepository.findById(usuarioRequest.getId());
+		
+		if (user == null) {
+			throw new Bolao10Exception("Usuário não encontrado.");
+		}
+		
+		user.setPrimeiro(Boolean.FALSE);
+		user.setSenha(usuarioRequest.getNovaSenha());
+		userRepository.save(user);
+		
+		return jwtService.createJwtToken(user);
 	}
 
 }

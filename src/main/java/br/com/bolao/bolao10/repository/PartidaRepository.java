@@ -108,6 +108,21 @@ public class PartidaRepository extends GenericRepository {
 			return null;
 		}
 	}
+	
+	public List<Partida> carregarPartidasAnteriores() {
+		
+		StringBuilder sql = new StringBuilder();
+		sql.append(" select p from Partida p	");
+		sql.append(" where p.finalizada = true order by p.id desc ");
+		
+		TypedQuery<Partida> query = em.createQuery(sql.toString(), Partida.class);
+		try {
+			return query.setMaxResults(3).getResultList();
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
 
 	public List<Partida> carregarPartidasPorSelecao(Long id) {
 

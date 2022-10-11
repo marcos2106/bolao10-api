@@ -3,6 +3,8 @@ package br.com.bolao.bolao10.service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -116,6 +118,13 @@ public class HomeService {
 			}
 		}
 		return pp;
+	}
+	
+	public List<Partida> carregarPartidasAnteriores() {
+		
+		List<Partida> listaPartida = partidaRepository.carregarPartidasAnteriores();
+		Collections.sort(listaPartida, Comparator.comparing(Partida::getId));
+		return listaPartida;
 	}
 
 	public List<Ranking> carregarRanking() {

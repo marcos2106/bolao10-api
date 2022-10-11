@@ -22,24 +22,24 @@ public class Colocacao implements Serializable {
 	@Column(name = "idcolocacao", nullable = false, columnDefinition = "INT")
 	private Long id;
 
-	@ManyToOne(cascade = CascadeType.MERGE, optional = false, fetch = FetchType.EAGER)
-	@JoinColumn(name = "campeao", nullable = false)
+	@ManyToOne(cascade = CascadeType.MERGE, optional = true, fetch = FetchType.EAGER)
+	@JoinColumn(name = "campeao", nullable = true)
 	private Selecao campeao;
 	
-	@ManyToOne(cascade = CascadeType.MERGE, optional = false, fetch = FetchType.EAGER)
-	@JoinColumn(name = "vice", nullable = false)
+	@ManyToOne(cascade = CascadeType.MERGE, optional = true, fetch = FetchType.EAGER)
+	@JoinColumn(name = "vice", nullable = true)
 	private Selecao vice;
 	
-	@ManyToOne(cascade = CascadeType.MERGE, optional = false, fetch = FetchType.EAGER)
-	@JoinColumn(name = "terceiro", nullable = false)
+	@ManyToOne(cascade = CascadeType.MERGE, optional = true, fetch = FetchType.EAGER)
+	@JoinColumn(name = "terceiro", nullable = true)
 	private Selecao terceiro;
 	
-	@ManyToOne(cascade = CascadeType.MERGE, optional = false, fetch = FetchType.EAGER)
-	@JoinColumn(name = "quarto", nullable = false)
+	@ManyToOne(cascade = CascadeType.MERGE, optional = true, fetch = FetchType.EAGER)
+	@JoinColumn(name = "quarto", nullable = true)
 	private Selecao quarto;
 	
-	@ManyToOne(cascade = CascadeType.MERGE, optional = false, fetch = FetchType.EAGER)
-	@JoinColumn(name = "artilharia", nullable = false)
+	@ManyToOne(cascade = CascadeType.MERGE, optional = true, fetch = FetchType.EAGER)
+	@JoinColumn(name = "artilharia", nullable = true)
 	private Selecao artilharia;
 	
 

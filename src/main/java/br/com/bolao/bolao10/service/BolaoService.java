@@ -136,7 +136,7 @@ public class BolaoService {
 		Ranking rnk = rankingRepository.findById(idUsuario);
 		rnk.setUsuario(usuario);
 		rnk.setPontuacao(0);
-		rnk.setPosicaoAnterior(0);
+		rnk.setPosicaoAnterior(999);
 		rankingRepository.save(rnk);
 	}
 

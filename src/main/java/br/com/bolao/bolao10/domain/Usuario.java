@@ -58,6 +58,9 @@ public class Usuario implements Serializable {
 
 	@Column(name = "pagamento", nullable = false, columnDefinition = "CHAR(1) DEFAULT 0")
 	private Boolean pagamento;
+	
+	@Column(name = "primeiro", nullable = false, columnDefinition = "CHAR(1) DEFAULT 1")
+	private Boolean primeiro;
 
 	@Column(name = "avatar", nullable = false, columnDefinition = "VARCHAR(100)")
 	private String avatar;
@@ -199,6 +202,14 @@ public class Usuario implements Serializable {
 
 	public void setConfirmarsenha(String confirmarsenha) {
 		this.confirmarsenha = confirmarsenha;
+	}
+
+	public Boolean getPrimeiro() {
+		return primeiro;
+	}
+
+	public void setPrimeiro(Boolean primeiro) {
+		this.primeiro = primeiro;
 	}
 
 	@Override

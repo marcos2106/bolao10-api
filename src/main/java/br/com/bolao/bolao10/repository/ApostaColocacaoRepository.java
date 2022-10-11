@@ -1,6 +1,8 @@
 
 package br.com.bolao.bolao10.repository;
 
+import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import br.com.bolao.bolao10.domain.ApostaColocacao;
 import br.com.bolao.bolao10.model.ApostaColocacaoSelecao;
+import br.com.bolao.bolao10.support.Constants;
 
 @Repository
 public class ApostaColocacaoRepository extends GenericRepository {
@@ -50,14 +53,12 @@ public class ApostaColocacaoRepository extends GenericRepository {
 		}
 	}
 
-	public ApostaColocacao carregarApostaColocacao() {
+	public List<ApostaColocacao> carregarApostaColocacao() {
 
-		StringBuilder sql = new StringBuilder();
-		sql.append(" select c from ApostaColocacao c ");
-
-		TypedQuery<ApostaColocacao> query = em.createQuery(sql.toString(), ApostaColocacao.class);
+		TypedQuery<ApostaColocacao> query = em.createQuery(
+				" select c from ApostaColocacao c ", ApostaColocacao.class);
 		try {
-			return query.getSingleResult();
+			return query.getResultList();
 		}
 		catch (Exception e) {
 			return null;
@@ -96,6 +97,20 @@ public class ApostaColocacaoRepository extends GenericRepository {
 		catch (Exception e) {
 			return 0L;
 		}
+	}
+
+	public void zerarPontuacaoColocacao() {
+
+		String sqlBasico = " UPDATE aposta_colocacao ac SET ";
+		
+		String sql = sqlBasico +" ac.pontoscampeao = "+ Constants.APOSTA_ERRADA +" where ac.pontoscampeao = null ";
+		em.createNativeQuery(sql).executeUpdate();
+		sql = sqlBasico +" ac.pontosvice = "+ Constants.APOSTA_ERRADA +" where ac.pontosvice = null ";
+		em.createNativeQuery(sql).executeUpdate();
+		sql = sqlBasico +" ac.pontosterceiro = "+ Constants.APOSTA_ERRADA +" where ac.pontosterceiro = null ";
+		em.createNativeQuery(sql).executeUpdate();
+		sql = sqlBasico +" ac.pontosquarto = "+ Constants.APOSTA_ERRADA +" where ac.pontosquarto = null ";
+		em.createNativeQuery(sql).executeUpdate();
 	}
 
 }

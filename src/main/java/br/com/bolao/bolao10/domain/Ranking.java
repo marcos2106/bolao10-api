@@ -23,10 +23,10 @@ public class Ranking implements Serializable {
 	@JoinColumn(name = "idusuario", nullable = false)	
 	private Usuario usuario;
 
-	@Column(name = "pontuacao", nullable = true, columnDefinition = "INT")
+	@Column(name = "pontuacao", nullable = false, columnDefinition = "INT")
 	private Integer pontuacao;
 	
-	@Column(name = "pontuacao_provisoria", nullable = true, columnDefinition = "INT")
+	@Column(name = "pontuacao_provisoria", nullable = false, columnDefinition = "INT")
 	private Integer pontuacaoProvisoria;
 	
 	@Column(name = "posicaoanterior", nullable = true, columnDefinition = "INT")
