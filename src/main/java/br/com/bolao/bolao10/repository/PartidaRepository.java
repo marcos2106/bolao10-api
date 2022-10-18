@@ -65,9 +65,8 @@ public class PartidaRepository extends GenericRepository {
 	public List<Partida> carregarPartidasAposta() {
 		
 		StringBuilder sql = new StringBuilder();
-		sql.append(" select p		            		");
-		sql.append(" from Partida p	 					");
-		sql.append(" order by p.fase, p.selecaoA.grupo 	");
+		sql.append(" select p from Partida p					");
+		sql.append(" order by p.fase, p.selecaoA.grupo, p.id	");
 		
 		TypedQuery<Partida> query = em.createQuery(sql.toString(), Partida.class);
 		try {

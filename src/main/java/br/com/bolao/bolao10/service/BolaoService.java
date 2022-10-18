@@ -195,29 +195,30 @@ public class BolaoService {
 	}
 
 	public List<Aposta> carregarApostaPorPartida(Long idPartida) {
+		
+		if (configuracaoService.situacaoAtiva().getId() == Constants.SITUACAO_DURANTE) {
 
-		if (idPartida == null) {
-			throw new Bolao10Exception("Apostas não encontradas!");
-		}
-		Partida partida = partidaRepository.findById(idPartida);
-
-		List<Aposta> listaAposta = apostaRepository.carregarApostaPorPartida(idPartida);
-
-		if (partida.getIniciada()) {
-			if (partida.getFinalizada()) {
-				Collections.sort(listaAposta, Comparator.comparing(Aposta::getPontuacao).reversed());
-			} else {
-				Collections.sort(listaAposta, Comparator.comparing(Aposta::getPontuacaoProvisoria).reversed());
+			if (idPartida == null) {
+				throw new Bolao10Exception("Apostas não encontradas!");
 			}
+			Partida partida = partidaRepository.findById(idPartida);
+	
+			List<Aposta> listaAposta = apostaRepository.carregarApostaPorPartida(idPartida);
+			
+			if (partida.getIniciada()) {
+				if (partida.getFinalizada()) {
+					Collections.sort(listaAposta, Comparator.comparing(Aposta::getPontuacao).reversed());
+				} else {
+					Collections.sort(listaAposta, Comparator.comparing(Aposta::getPontuacaoProvisoria).reversed());
+				}
+			} else {
+				Collections.sort(listaAposta, Comparator.comparing(Aposta::getPlacarA));
+			}
+			return listaAposta;
+			
 		} else {
-			Collections.sort(listaAposta, Comparator.comparing(Aposta::getPlacarB));
-			Collections.sort(listaAposta, Comparator.comparing(Aposta::getPlacarA));
+			return new ArrayList<Aposta>();
 		}
-
-		if (listaAposta == null) {
-			throw new Bolao10Exception("Apostas não encontradas!");
-		}
-		return listaAposta;
 	}
 
 	public ApostaColocacaoSelecao carregarApostaColocacaoPorSelecao(Long idSelecaoA, Long idSelecaoB) {

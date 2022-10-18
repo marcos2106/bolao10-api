@@ -252,6 +252,9 @@ public class ConfiguracaoService {
 	@Transactional
 	public Usuario adicionarUsuario(Usuario usuario) {
 		usuario.setTelefone(Strings.removeNoNumericChars(usuario.getTelefone()));
+		if (usuario.getId()==null) {
+			usuario.setPrimeiro(Boolean.TRUE);
+		}
 		return usuarioRepository.save(usuario);
 	}
 
