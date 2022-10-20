@@ -329,25 +329,30 @@ public class BolaoService {
 
 		HomeUsuarioGrafico hug = new HomeUsuarioGrafico();
 		
-		List<RankingHistorico> listaRank = rhRepository.carregarRankingHistoricoPorUsuario(idUsuario);
+		// primeiro verifica a situação do bolão, se está DURANTE
+		Situacao situacao = configuracaoService.situacaoAtiva();
 		
-		for (RankingHistorico rh : listaRank) {
-
-			DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM");
-			hug.getListaDatas().add(rh.getDataRegistro().format(fmt));
-			hug.getListaPontuacao().add(rh.getPontuacao());
-			hug.getListaPosicao().add(rh.getPosicao());
+		if (situacao != null && situacao.getId() > Constants.SITUACAO_ANTES) {
+		
+			List<RankingHistorico> listaRank = rhRepository.carregarRankingHistoricoPorUsuario(idUsuario);
+			
+			for (RankingHistorico rh : listaRank) {
+	
+				DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM");
+				hug.getListaDatas().add(rh.getDataRegistro().format(fmt));
+				hug.getListaPontuacao().add(rh.getPontuacao());
+				hug.getListaPosicao().add(rh.getPosicao());
+			}
+			
+			// verificar o Lider
+			Usuario usuario = rankingRepository.obterLiderRanking();
+			
+			List<RankingHistorico> listaRankLider = rhRepository.carregarRankingHistoricoPorUsuario(usuario.getId());
+			
+			for (RankingHistorico rh : listaRankLider) {
+				hug.getListaPontuacaoLider().add(rh.getPontuacao());
+			}
 		}
-		
-		// verificar o Lider
-		Usuario usuario = rankingRepository.obterLiderRanking();
-		
-		List<RankingHistorico> listaRankLider = rhRepository.carregarRankingHistoricoPorUsuario(usuario.getId());
-		
-		for (RankingHistorico rh : listaRankLider) {
-			hug.getListaPontuacaoLider().add(rh.getPontuacao());
-		}
-		
 		return hug;
 	}
 

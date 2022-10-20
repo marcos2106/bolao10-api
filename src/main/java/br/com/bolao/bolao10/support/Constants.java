@@ -33,5 +33,6 @@ public class Constants {
 
    public static final String[] GRUPOS = {"A", "B", "C", "D", "E", "F", "G", "H"};
 
+   public static final int SITUACAO_ANTES = 1;
    public static final int SITUACAO_DURANTE = 2;
 }
