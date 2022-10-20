@@ -29,6 +29,8 @@ public class Constants {
    public static final BigDecimal PORC_QUINTO = new BigDecimal(5);
    public static final BigDecimal PORC_SEXTO = new BigDecimal(2);
    
+   public static final BigDecimal PORC_ADMIN = new BigDecimal(5);
+
    public static final String[] GRUPOS = {"A", "B", "C", "D", "E", "F", "G", "H"};
 
    public static final int SITUACAO_DURANTE = 2;

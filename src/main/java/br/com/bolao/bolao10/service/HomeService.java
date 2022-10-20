@@ -67,6 +67,11 @@ public class HomeService {
 		Integer qntdParticipantes = usuarioRepository.carregarParticipantes().size();
 
 		BigDecimal valorTotal = new BigDecimal(qntdParticipantes).multiply(Constants.VALOR_APOSTA);
+		
+		// tirar 5%
+		BigDecimal taxasAdmin = valorTotal.multiply(Constants.PORC_ADMIN).divide(new BigDecimal(100));
+		valorTotal = valorTotal.subtract(taxasAdmin);
+		
 		dados.setValorTotal(NumberUtils.formatMoney(valorTotal));
 
 		BigDecimal valor1 = valorTotal.multiply(Constants.PORC_PRIMEIRO).divide(new BigDecimal(100));

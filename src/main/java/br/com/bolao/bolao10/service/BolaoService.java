@@ -203,19 +203,24 @@ public class BolaoService {
 			}
 			Partida partida = partidaRepository.findById(idPartida);
 	
-			List<Aposta> listaAposta = apostaRepository.carregarApostaPorPartida(idPartida);
-			
-			if (partida.getIniciada()) {
-				if (partida.getFinalizada()) {
-					Collections.sort(listaAposta, Comparator.comparing(Aposta::getPontuacao).reversed());
+			List<Aposta> listaAposta = new ArrayList<Aposta>();
+			try {
+				listaAposta = apostaRepository.carregarApostaPorPartida(idPartida);
+				
+				if (partida.getIniciada()) {
+					if (partida.getFinalizada()) {
+						Collections.sort(listaAposta, Comparator.comparing(Aposta::getPontuacao).reversed());
+					} else {
+						Collections.sort(listaAposta, Comparator.comparing(Aposta::getPontuacaoProvisoria).reversed());
+					}
 				} else {
-					Collections.sort(listaAposta, Comparator.comparing(Aposta::getPontuacaoProvisoria).reversed());
+					Collections.sort(listaAposta, Comparator.comparing(Aposta::getPontuacaoProvisoria));
 				}
-			} else {
-				Collections.sort(listaAposta, Comparator.comparing(Aposta::getPlacarA));
+				return listaAposta;
+		
+			} catch (Exception e) {
+				return new ArrayList<Aposta>();
 			}
-			return listaAposta;
-			
 		} else {
 			return new ArrayList<Aposta>();
 		}
