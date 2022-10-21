@@ -367,21 +367,33 @@ public class BolaoService {
 		
 		List<Usuario> listaUsuario = userRepository.carregarParticipantesAtivos();
 		
-		for (Usuario usuario : listaUsuario) {
+		if (configuracaoService.situacaoAtiva().getId() == Constants.SITUACAO_ANTES) {
 			
-			PontuacaoUsuarioPartida pup = new PontuacaoUsuarioPartida();
-			pup.setUsuario(usuario);
+			for (Usuario usuario : listaUsuario) {
+				PontuacaoUsuarioPartida pup = new PontuacaoUsuarioPartida();
+				pup.setUsuario(usuario);
+				
+				pup.setPontuacao(0L);
+				listaPontuacao.add(pup);
+			}
+		} else {
 			
-			Long pontuacao = rankingRepository.obterPontuacaoPorUsuario(usuario.getId());
-			pup.setPontuacao(pontuacao);
-			
-			List<Aposta> listaApostas = apostaRepository.carregarApostaPorUsuario(usuario.getId());
-			pup.setListaApostas(listaApostas);
-			
-			ApostaColocacao apostaColocacao = apostaColocacaoRepository.findByUsuario(usuario.getId());
-			pup.setApostaColocacao(apostaColocacao);
-			
-			listaPontuacao.add(pup);
+			for (Usuario usuario : listaUsuario) {
+				
+				PontuacaoUsuarioPartida pup = new PontuacaoUsuarioPartida();
+				pup.setUsuario(usuario);
+				
+				Long pontuacao = rankingRepository.obterPontuacaoPorUsuario(usuario.getId());
+				pup.setPontuacao(pontuacao);
+				
+				List<Aposta> listaApostas = apostaRepository.carregarApostaPorUsuario(usuario.getId());
+				pup.setListaApostas(listaApostas);
+				
+				ApostaColocacao apostaColocacao = apostaColocacaoRepository.findByUsuario(usuario.getId());
+				pup.setApostaColocacao(apostaColocacao);
+				
+				listaPontuacao.add(pup);
+			}
 		}
 		return listaPontuacao;
 	}
