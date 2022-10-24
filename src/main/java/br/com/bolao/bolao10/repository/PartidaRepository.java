@@ -80,8 +80,7 @@ public class PartidaRepository extends GenericRepository {
 	public Partida carregarPartidaEstreia() {
 
 		StringBuilder sql = new StringBuilder();
-		sql.append(" select p from Partida p	");
-		sql.append(" where p.dataHora = 1				");
+		sql.append(" select p from Partida p  where p.id = 3 ");
 		
 		TypedQuery<Partida> query = em.createQuery(sql.toString(), Partida.class);
 		try {
