@@ -51,7 +51,7 @@ public class PartidaRepository extends GenericRepository {
 	public List<Partida> carregarPartidasTabela() {
 		
 		StringBuilder sql = new StringBuilder();
-		sql.append(" select p from Partida p order by p.id ");
+		sql.append(" select p from Partida p order by p.dataHora ");
 		
 		TypedQuery<Partida> query = em.createQuery(sql.toString(), Partida.class);
 		try {
@@ -66,7 +66,7 @@ public class PartidaRepository extends GenericRepository {
 		
 		StringBuilder sql = new StringBuilder();
 		sql.append(" select p from Partida p					");
-		sql.append(" order by p.fase, p.selecaoA.grupo, p.id	");
+		sql.append(" order by p.fase, p.selecaoA.grupo, p.dataHora	");
 		
 		TypedQuery<Partida> query = em.createQuery(sql.toString(), Partida.class);
 		try {
@@ -81,7 +81,7 @@ public class PartidaRepository extends GenericRepository {
 
 		StringBuilder sql = new StringBuilder();
 		sql.append(" select p from Partida p	");
-		sql.append(" where p.id = 1				");
+		sql.append(" where p.dataHora = 1				");
 		
 		TypedQuery<Partida> query = em.createQuery(sql.toString(), Partida.class);
 		try {
@@ -97,7 +97,7 @@ public class PartidaRepository extends GenericRepository {
 		StringBuilder sql = new StringBuilder();
 		sql.append(" select p from Partida p	");
 		sql.append(" where p.finalizada = false	");
-		sql.append(" order by p.id	");
+		sql.append(" order by p.dataHora	");
 		
 		TypedQuery<Partida> query = em.createQuery(sql.toString(), Partida.class);
 		try {
@@ -112,7 +112,7 @@ public class PartidaRepository extends GenericRepository {
 		
 		StringBuilder sql = new StringBuilder();
 		sql.append(" select p from Partida p	");
-		sql.append(" where p.finalizada = true order by p.id desc ");
+		sql.append(" where p.finalizada = true order by p.dataHora desc ");
 		
 		TypedQuery<Partida> query = em.createQuery(sql.toString(), Partida.class);
 		try {
@@ -129,7 +129,7 @@ public class PartidaRepository extends GenericRepository {
 		sql.append(" select p from Partida p		");
 		sql.append(" where p.selecaoA.id = :idIda	");
 		sql.append(" or p.selecaoB.id = :idVolta	");
-		sql.append(" order by p.id	");
+		sql.append(" order by p.dataHora	");
 		
 		TypedQuery<Partida> query = em.createQuery(sql.toString(), Partida.class);
 		query.setParameter("idIda", id);

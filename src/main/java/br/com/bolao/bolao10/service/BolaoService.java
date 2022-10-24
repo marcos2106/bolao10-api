@@ -365,9 +365,9 @@ public class BolaoService {
 		
 		List<PontuacaoUsuarioPartida> listaPontuacao = new ArrayList<PontuacaoUsuarioPartida>();
 		
-		List<Usuario> listaUsuario = userRepository.carregarParticipantesAtivos();
-		
 		if (configuracaoService.situacaoAtiva().getId() == Constants.SITUACAO_ANTES) {
+			
+			List<Usuario> listaUsuario = userRepository.carregarParticipantes();
 			
 			for (Usuario usuario : listaUsuario) {
 				PontuacaoUsuarioPartida pup = new PontuacaoUsuarioPartida();
@@ -377,6 +377,8 @@ public class BolaoService {
 				listaPontuacao.add(pup);
 			}
 		} else {
+
+			List<Usuario> listaUsuario = userRepository.carregarParticipantesAtivos();
 			
 			for (Usuario usuario : listaUsuario) {
 				

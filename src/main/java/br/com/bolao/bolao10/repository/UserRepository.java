@@ -192,7 +192,7 @@ public class UserRepository extends GenericRepository {
 		//sql.append(" and u.pagamento = true 				");
 		//sql.append(" and u.aposta = true 					");
 		sql.append(" and u.ativo = true 					");
-		sql.append(" order by u.dataHoraPgto desc			");
+		sql.append(" order by u.dataHoraPgto desc, u.nome	");
 
 		try {
 			return em.createQuery(sql.toString(), Usuario.class).getResultList();
