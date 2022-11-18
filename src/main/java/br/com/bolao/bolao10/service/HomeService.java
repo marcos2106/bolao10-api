@@ -128,7 +128,7 @@ public class HomeService {
 	public List<Partida> carregarPartidasAnteriores() {
 		
 		List<Partida> listaPartida = partidaRepository.carregarPartidasAnteriores();
-		Collections.sort(listaPartida, Comparator.comparing(Partida::getId));
+		Collections.sort(listaPartida, Comparator.comparing(Partida::getDataHora));
 		return listaPartida;
 	}
 

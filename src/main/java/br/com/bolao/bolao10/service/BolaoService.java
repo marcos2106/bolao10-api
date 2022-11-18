@@ -18,6 +18,7 @@ import br.com.bolao.bolao10.domain.Aposta;
 import br.com.bolao.bolao10.domain.ApostaColocacao;
 import br.com.bolao.bolao10.domain.Partida;
 import br.com.bolao.bolao10.domain.Ranking;
+import br.com.bolao.bolao10.domain.RankingCustomizado;
 import br.com.bolao.bolao10.domain.RankingHistorico;
 import br.com.bolao.bolao10.domain.Situacao;
 import br.com.bolao.bolao10.domain.Usuario;
@@ -28,9 +29,12 @@ import br.com.bolao.bolao10.model.ApostaPartida;
 import br.com.bolao.bolao10.model.HomeUsuario;
 import br.com.bolao.bolao10.model.HomeUsuarioGrafico;
 import br.com.bolao.bolao10.model.PontuacaoUsuarioPartida;
+import br.com.bolao.bolao10.model.RankingCustomizadoRequest;
+import br.com.bolao.bolao10.model.RankingUsuario;
 import br.com.bolao.bolao10.repository.ApostaColocacaoRepository;
 import br.com.bolao.bolao10.repository.ApostaRepository;
 import br.com.bolao.bolao10.repository.PartidaRepository;
+import br.com.bolao.bolao10.repository.RankingCustomizadoRepository;
 import br.com.bolao.bolao10.repository.RankingHistoricoRepository;
 import br.com.bolao.bolao10.repository.RankingRepository;
 import br.com.bolao.bolao10.repository.SelecaoRepository;
@@ -65,6 +69,9 @@ public class BolaoService {
 	@Autowired
 	private RankingHistoricoRepository rhRepository;
 
+	@Autowired
+	private RankingCustomizadoRepository rcRepository;
+
 	@Transactional
 	public List<Ranking> carregarRanking() {
 		return rankingRepository.carregarRanking();
@@ -86,6 +93,10 @@ public class BolaoService {
 	@Transactional
 	public void salvarAposta(ApostaFilter apostaFilter, Usuario usuarioLogado) {
 
+		if (isBolaoDurante()) {
+			throw new Bolao10Exception("Não é possível salvar aposta fora do período!");
+		}
+		
 		Long idUsuario = usuarioLogado.getId();
 		try {
 			for (Partida partida : apostaFilter.getListaPartidas()) {
@@ -108,6 +119,10 @@ public class BolaoService {
 			e.printStackTrace();
 			throw new Bolao10Exception("Erro ao salvar a aposta!");
 		}
+	}
+
+	private boolean isBolaoDurante() {
+		return configuracaoService.situacaoAtiva().getId() == Constants.SITUACAO_DURANTE;
 	}
 
 	@Transactional
@@ -195,18 +210,18 @@ public class BolaoService {
 	}
 
 	public List<Aposta> carregarApostaPorPartida(Long idPartida) {
-		
-		if (configuracaoService.situacaoAtiva().getId() == Constants.SITUACAO_DURANTE) {
+
+		if (isBolaoDurante()) {
 
 			if (idPartida == null) {
 				throw new Bolao10Exception("Apostas não encontradas!");
 			}
 			Partida partida = partidaRepository.findById(idPartida);
-	
+
 			List<Aposta> listaAposta = new ArrayList<Aposta>();
 			try {
 				listaAposta = apostaRepository.carregarApostaPorPartida(idPartida);
-				
+
 				if (partida.getIniciada()) {
 					if (partida.getFinalizada()) {
 						Collections.sort(listaAposta, Comparator.comparing(Aposta::getPontuacao).reversed());
@@ -214,10 +229,10 @@ public class BolaoService {
 						Collections.sort(listaAposta, Comparator.comparing(Aposta::getPontuacaoProvisoria).reversed());
 					}
 				} else {
-					Collections.sort(listaAposta, Comparator.comparing(Aposta::getPontuacaoProvisoria));
+					Collections.sort(listaAposta, Comparator.comparing(Aposta::getPlacarA));
 				}
 				return listaAposta;
-		
+
 			} catch (Exception e) {
 				return new ArrayList<Aposta>();
 			}
@@ -230,13 +245,13 @@ public class BolaoService {
 
 		return apostaColocacaoRepository.carregarApostaColocacaoPorSelecao(idSelecaoA, idSelecaoB);
 	}
-	
+
 	public List<Aposta> carregarApostaPorUsuario(Long idUsuario) {
-		
+
 		if (idUsuario == null) {
 			throw new Bolao10Exception("Usuário não encontrado!");
 		}
-		
+
 		return apostaRepository.carregarApostaPorUsuario(idUsuario);
 	}
 
@@ -267,16 +282,16 @@ public class BolaoService {
 	}
 
 	public HomeUsuario carregarDadosUsuario(Long idUsuario) {
-		
+
 		HomeUsuario hu = new HomeUsuario();
-		
+
 		try {
 			if (idUsuario == null) {
 				throw new Bolao10Exception("Usuário não encontrado!");
 			}
 			// Dados de usuario
 			hu = dadosUsuario(idUsuario, hu);
-			
+
 			// Dados do bolão
 			hu = dadosBolaoPorUsuario(idUsuario, hu);
 		} catch (Exception e) {
@@ -286,18 +301,18 @@ public class BolaoService {
 	}
 
 	private HomeUsuario dadosBolaoPorUsuario(Long idUsuario, HomeUsuario hu) {
-		
+
 		Long pontuacao = rankingRepository.obterPontuacaoPorUsuario(idUsuario);
 		Long posicao = rankingRepository.obterPosicaoPorUsuario(pontuacao);
 
 		RankingHistorico rk = rhRepository.obterMelhorPosicaoPorUsuario(idUsuario);
-		
+
 		Long placarExato = apostaRepository.obterPlacarExatoPorUsuario(idUsuario);
 		Long totalPartida = partidaRepository.obterQntdPartidasRealizadas();
-		
+
 		hu.setPontuacao(pontuacao);
 		hu.setPosicao(posicao);
-		
+
 		if (rk != null) {
 			hu.setMelhorPosicao(rk.getPosicao().longValue());
 			DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM");
@@ -305,7 +320,7 @@ public class BolaoService {
 		}
 		hu.setPlacarExato(placarExato);
 		hu.setTotalPartida(totalPartida);
-		
+
 		return hu;
 	}
 
@@ -316,7 +331,7 @@ public class BolaoService {
 			throw new Bolao10Exception("Usuário não encontrado!");
 		}
 		hu.setUsuario(usuario);
-		
+
 		DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM HH:mm:ss");
 		if (usuario.getDataHoraPgto()!=null)
 			hu.setDataPagamento(usuario.getDataHoraPgto().format(fmt));
@@ -328,27 +343,27 @@ public class BolaoService {
 	public HomeUsuarioGrafico carregarDadosUsuarioGrafico(Long idUsuario) {
 
 		HomeUsuarioGrafico hug = new HomeUsuarioGrafico();
-		
+
 		// primeiro verifica a situação do bolão, se está DURANTE
 		Situacao situacao = configuracaoService.situacaoAtiva();
-		
+
 		if (situacao != null && situacao.getId() > Constants.SITUACAO_ANTES) {
-		
+
 			List<RankingHistorico> listaRank = rhRepository.carregarRankingHistoricoPorUsuario(idUsuario);
-			
+
 			for (RankingHistorico rh : listaRank) {
-	
+
 				DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM");
 				hug.getListaDatas().add(rh.getDataRegistro().format(fmt));
 				hug.getListaPontuacao().add(rh.getPontuacao());
 				hug.getListaPosicao().add(rh.getPosicao());
 			}
-			
+
 			// verificar o Lider
 			Usuario usuario = rankingRepository.obterLiderRanking();
-			
+
 			List<RankingHistorico> listaRankLider = rhRepository.carregarRankingHistoricoPorUsuario(usuario.getId());
-			
+
 			for (RankingHistorico rh : listaRankLider) {
 				hug.getListaPontuacaoLider().add(rh.getPontuacao());
 			}
@@ -357,47 +372,139 @@ public class BolaoService {
 	}
 
 	public ApostaColocacao carregarApostaColocacaoPorUsuario(Long idUsuario) {
-		
+
 		return apostaColocacaoRepository.findByUsuario(idUsuario);
 	}
 
 	public List<PontuacaoUsuarioPartida> carregarPontuacaoPartidas() {
-		
+
 		List<PontuacaoUsuarioPartida> listaPontuacao = new ArrayList<PontuacaoUsuarioPartida>();
-		
+
 		if (configuracaoService.situacaoAtiva().getId() == Constants.SITUACAO_ANTES) {
-			
+
 			List<Usuario> listaUsuario = userRepository.carregarParticipantes();
-			
+
 			for (Usuario usuario : listaUsuario) {
 				PontuacaoUsuarioPartida pup = new PontuacaoUsuarioPartida();
 				pup.setUsuario(usuario);
-				
+
 				pup.setPontuacao(0L);
 				listaPontuacao.add(pup);
 			}
 		} else {
 
 			List<Usuario> listaUsuario = userRepository.carregarParticipantesAtivos();
-			
+
 			for (Usuario usuario : listaUsuario) {
-				
+
 				PontuacaoUsuarioPartida pup = new PontuacaoUsuarioPartida();
 				pup.setUsuario(usuario);
-				
+
 				Long pontuacao = rankingRepository.obterPontuacaoPorUsuario(usuario.getId());
 				pup.setPontuacao(pontuacao);
-				
+
 				List<Aposta> listaApostas = apostaRepository.carregarApostaPorUsuario(usuario.getId());
 				pup.setListaApostas(listaApostas);
-				
+
 				ApostaColocacao apostaColocacao = apostaColocacaoRepository.findByUsuario(usuario.getId());
 				pup.setApostaColocacao(apostaColocacao);
-				
+
 				listaPontuacao.add(pup);
 			}
 		}
 		return listaPontuacao;
+	}
+
+	public List<RankingUsuario> carregarRankingAtivo() {
+
+		List<Ranking> listaRanking = rankingRepository.carregarRanking();
+
+		List<RankingUsuario> listaUR = new ArrayList<RankingUsuario>();
+
+		for (Ranking ranking : listaRanking) {
+			RankingUsuario ur = new RankingUsuario();
+			ur.setRanking(ranking);
+			listaUR.add(ur);
+		}
+		return listaUR;
+	}
+
+	@Transactional
+	public void salvarRankingCustomizado(Long idUsuario, RankingCustomizadoRequest ranking) {
+
+		validarRankingCustomizado(idUsuario, ranking);
+
+		try {
+
+			Usuario usuario = userRepository.findById(idUsuario);
+
+			List<Ranking> listaRanking = new ArrayList<Ranking>();
+
+			RankingCustomizado rc;
+			if (ranking.getId() == null) {
+				rc = new RankingCustomizado();
+				rc.setUsuario(usuario);
+
+				// adicionar a própria pessoa no ranking na criação do ranking se ela já apostou
+				if (usuario.getAposta()) {
+					listaRanking.add(rankingRepository.findById(idUsuario));
+				}
+			} else {
+				rc = rcRepository.findById(ranking.getId());
+			}
+			rc.setNome(ranking.getNome());
+
+			for (RankingUsuario rnkUsuario : ranking.getListaRankingUsuario()) {
+
+				if (rnkUsuario.getSelecionado()) {
+					Ranking rnk = rankingRepository.findById(rnkUsuario.getRanking().getUsuario().getId());
+					listaRanking.add(rnk);
+				}
+			}
+			Collections.sort(listaRanking, Comparator.comparing(Ranking::getPontuacao));
+
+			rc.setListaRanking(listaRanking);
+
+			rcRepository.save(rc);
+
+		} catch (Exception e) {
+			throw new Bolao10Exception("Erro ao salvar um Ranking!");
+		}
+	}
+
+	private void validarRankingCustomizado(Long idUsuario, RankingCustomizadoRequest ranking) {
+
+		if (idUsuario == null) {
+			throw new Bolao10Exception("Usuário não encontrado!");
+		}
+		if (ranking == null || ranking.getListaRankingUsuario().isEmpty()) {
+			throw new Bolao10Exception("Nenhum participante selecionado!");
+		}
+	}
+
+	public List<RankingCustomizado> carregarRankingCustomizado(Long idUsuario) {
+
+		if (idUsuario == null) {
+			throw new Bolao10Exception("Usuário não encontrado!");
+		}
+		List<RankingCustomizado> listaRnkCu = rcRepository.carregarRankingCustomizado(idUsuario);
+
+		// não sei se precisa ordenar novamente, já que no salvar já ordena
+//		for (RankingCustomizado rc : listaRnkCu) {
+//			Collections.sort(rc.getListaRanking(), Comparator.comparing(Ranking::getPontuacao));
+//		}
+		return listaRnkCu;
+	}
+
+	@Transactional
+	public void apagarRankingCustomizado(Long idRanking) {
+
+		if (idRanking == null) {
+			throw new Bolao10Exception("Ranking não encontrado!");
+		}
+		RankingCustomizado rankingCustomizado = rcRepository.findById(idRanking);
+
+		rcRepository.delete(rankingCustomizado);
 	}
 
 }

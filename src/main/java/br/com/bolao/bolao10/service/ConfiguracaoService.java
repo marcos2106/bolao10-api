@@ -20,6 +20,7 @@ import br.com.bolao.bolao10.domain.Selecao;
 import br.com.bolao.bolao10.domain.Situacao;
 import br.com.bolao.bolao10.domain.Usuario;
 import br.com.bolao.bolao10.exception.Bolao10Exception;
+import br.com.bolao.bolao10.model.ApostaPartida;
 import br.com.bolao.bolao10.model.ColocacaoRequest;
 import br.com.bolao.bolao10.model.PartidasOutras;
 import br.com.bolao.bolao10.model.PontuacaoPadrao;
@@ -279,9 +280,39 @@ public class ConfiguracaoService {
 
 			classificacaoService.contabilizarClassificacao(partidaPersist);
 			contabilizarPontuacao(partidaPersist);
+			contabilizarPontuacaoRanking();
 
 		} catch (Exception e) {
 			throw new Bolao10Exception("Erro ao iniciar partida.");
+		}
+	}
+
+	private void contabilizarPontuacaoRanking() {
+		
+		List<Ranking> listaRnk = rankingRepository.carregarRanking();
+		
+		for (Ranking rnk : listaRnk) {
+			
+			Integer pontuacao = apostaRepository.calcularPontuacaoProvisoria(rnk.getUsuario());
+			
+			int rnkPontuacao = (rnk.getPontuacao() == null) ? 0 : rnk.getPontuacao();
+			int rnkPontuacaoProvisoria = (rnk.getPontuacaoProvisoria() == null) ? 0 : rnk.getPontuacaoProvisoria();
+
+			rnk.setPontuacao(rnkPontuacao - rnkPontuacaoProvisoria + pontuacao);
+			rnk.setPontuacaoProvisoria(pontuacao);
+			
+			rankingRepository.save(rnk);
+		}
+	}
+	
+	private void contabilizarPontuacaoRankingFinal() {
+		
+		List<Ranking> listaRnk = rankingRepository.carregarRanking();
+		
+		for (Ranking rnk : listaRnk) {
+			Integer pontuacao = apostaRepository.calcularPontuacaoProvisoria(rnk.getUsuario());
+			rnk.setPontuacaoProvisoria(pontuacao);
+			rankingRepository.save(rnk);
 		}
 	}
 
@@ -305,6 +336,7 @@ public class ConfiguracaoService {
 
 			classificacaoService.finalizarClassificacao(partidaPersist);
 			contabilizarPontuacaoFinal(partidaPersist);
+			contabilizarPontuacaoRankingFinal();
 
 		} catch (Exception e) {
 			throw new Bolao10Exception("Erro ao finalizar uma partida.");
@@ -348,6 +380,7 @@ public class ConfiguracaoService {
 
 			classificacaoService.contabilizarClassificacao(partidaPersist);
 			contabilizarPontuacao(partidaPersist);
+			contabilizarPontuacaoRanking();
 
 		} catch (Exception e) {
 			throw new Bolao10Exception("Erro ao adicionar um gol.");
@@ -394,85 +427,81 @@ public class ConfiguracaoService {
 	@Transactional
 	private void contabilizarPontuacao(Partida partida) {
 
-		List<Aposta> listaPartida = apostaRepository.carregarApostaPorPartida(partida.getId());
+		List<Aposta> listaApostas = apostaRepository.carregarApostaPorPartida(partida.getId());
 
 		Integer placarA = partida.getPlacarA();
 		Integer placarB = partida.getPlacarB();
 
-		for (Aposta aposta : listaPartida) {
+		for (Aposta aposta : listaApostas) {
 
-			Integer pontuacao = Constants.APOSTA_ERRADA;
-
-			// ACERTANDO INDEPENDENTE DO RESULTADO
-			if (aposta.getPlacarA() == placarA && aposta.getPlacarB() == placarB) {
-				pontuacao = Constants.APOSTA_CORRETA;
-			} else {
-
-				// EMPATE
-				if (placarA == placarB) {
-					// PARCIALMENTE
-					if (aposta.getPlacarA() == aposta.getPlacarB() && aposta.getPlacarA() != placarA) {
-						pontuacao = Constants.APOSTA_EMPATE_ERRADO;
-					}
-					// ERRANDO
-					if (aposta.getPlacarA() != aposta.getPlacarB()) {
-						pontuacao = Constants.APOSTA_ERRADA;
-					}
-				}
-
-				// VIT A
-				if (placarA > placarB) {
-					// VITORIA CORRETA
-					if (aposta.getPlacarA() > aposta.getPlacarB() && aposta.getPlacarA() == placarA) {
-						pontuacao = Constants.APOSTA_VITORIA_CORRETA;
-					}
-					// VITORIA DERROTA CORRETA
-					if (aposta.getPlacarA() > aposta.getPlacarB() && aposta.getPlacarB() == placarB) {
-						pontuacao = Constants.APOSTA_DERROTA_CORRETA;
-					}
-					// VITORIA ERRADA
-					if (aposta.getPlacarA() > aposta.getPlacarB() && aposta.getPlacarA() != placarA && aposta.getPlacarB() != placarB) {
-						pontuacao = Constants.APOSTA_VITORIA_ERRADA;
-					}
-					// ERRANDO
-					if (aposta.getPlacarA() <= aposta.getPlacarB()) {
-						pontuacao = Constants.APOSTA_ERRADA;
-					}
-				}
-
-				// VIT B
-				if (placarA < placarB) {
-					// VITORIA CORRETA
-					if (aposta.getPlacarA() < aposta.getPlacarB() && aposta.getPlacarB() == placarB) {
-						pontuacao = Constants.APOSTA_VITORIA_CORRETA;
-					}
-					// VITORIA DERROTA CORRETA
-					if (aposta.getPlacarA() < aposta.getPlacarB() && aposta.getPlacarA() == placarA) {
-						pontuacao = Constants.APOSTA_DERROTA_CORRETA;
-					}
-					// VITORIA ERRADA
-					if (aposta.getPlacarA() < aposta.getPlacarB() && aposta.getPlacarA() != placarA && aposta.getPlacarB() != placarB) {
-						pontuacao = Constants.APOSTA_VITORIA_ERRADA;
-					}
-					// ERRANDO
-					if (aposta.getPlacarA() >= aposta.getPlacarB()) {
-						pontuacao = Constants.APOSTA_ERRADA;
-					}
-				}
-			}
+			Integer pontuacao = calcularPontuacaoPartida(placarA, placarB, aposta);
 			aposta.setPontuacaoProvisoria(pontuacao);
-
-			Ranking rnk = rankingRepository.findById(aposta.getUsuario().getId());
-			// soma todas as pontuações provisorias das partidas iniciadas (pode haver 2 partidas acontecendo)
-			// buscar "iniciada" com id diferente da atual
-			//			rnk.setPontuacaoProvisoria(rnk.getPontuacao() + pontuacao);
-
-			rnk.setPontuacao(rnk.getPontuacao() - rnk.getPontuacaoProvisoria() + pontuacao);
-			rnk.setPontuacaoProvisoria(pontuacao);
-
-			rankingRepository.save(rnk);
 			apostaRepository.save(aposta);
 		}
+	}
+
+	private Integer calcularPontuacaoPartida(Integer placarA, Integer placarB, Aposta aposta) {
+		
+		Integer pontuacao = Constants.APOSTA_ERRADA;
+		
+		// ACERTANDO INDEPENDENTE DO RESULTADO
+		if (aposta.getPlacarA() == placarA && aposta.getPlacarB() == placarB) {
+			pontuacao = Constants.APOSTA_CORRETA;
+		} else {
+
+			// EMPATE
+			if (placarA == placarB) {
+				// PARCIALMENTE
+				if (aposta.getPlacarA() == aposta.getPlacarB() && aposta.getPlacarA() != placarA) {
+					pontuacao = Constants.APOSTA_EMPATE_ERRADO;
+				}
+				// ERRANDO
+				if (aposta.getPlacarA() != aposta.getPlacarB()) {
+					pontuacao = Constants.APOSTA_ERRADA;
+				}
+			}
+
+			// VIT A
+			if (placarA > placarB) {
+				// VITORIA CORRETA
+				if (aposta.getPlacarA() > aposta.getPlacarB() && aposta.getPlacarA() == placarA) {
+					pontuacao = Constants.APOSTA_VITORIA_CORRETA;
+				}
+				// VITORIA DERROTA CORRETA
+				if (aposta.getPlacarA() > aposta.getPlacarB() && aposta.getPlacarB() == placarB) {
+					pontuacao = Constants.APOSTA_DERROTA_CORRETA;
+				}
+				// VITORIA ERRADA
+				if (aposta.getPlacarA() > aposta.getPlacarB() && aposta.getPlacarA() != placarA && aposta.getPlacarB() != placarB) {
+					pontuacao = Constants.APOSTA_VITORIA_ERRADA;
+				}
+				// ERRANDO
+				if (aposta.getPlacarA() <= aposta.getPlacarB()) {
+					pontuacao = Constants.APOSTA_ERRADA;
+				}
+			}
+
+			// VIT B
+			if (placarA < placarB) {
+				// VITORIA CORRETA
+				if (aposta.getPlacarA() < aposta.getPlacarB() && aposta.getPlacarB() == placarB) {
+					pontuacao = Constants.APOSTA_VITORIA_CORRETA;
+				}
+				// VITORIA DERROTA CORRETA
+				if (aposta.getPlacarA() < aposta.getPlacarB() && aposta.getPlacarA() == placarA) {
+					pontuacao = Constants.APOSTA_DERROTA_CORRETA;
+				}
+				// VITORIA ERRADA
+				if (aposta.getPlacarA() < aposta.getPlacarB() && aposta.getPlacarA() != placarA && aposta.getPlacarB() != placarB) {
+					pontuacao = Constants.APOSTA_VITORIA_ERRADA;
+				}
+				// ERRANDO
+				if (aposta.getPlacarA() >= aposta.getPlacarB()) {
+					pontuacao = Constants.APOSTA_ERRADA;
+				}
+			}
+		}
+		return pontuacao;
 	}	
 
 	private void contabilizarPontuacaoFinal(Partida partida) {
@@ -485,12 +514,6 @@ public class ConfiguracaoService {
 			aposta.setPontuacao(pontuacao);
 			aposta.setPontuacaoProvisoria(null);
 			apostaRepository.save(aposta);
-
-			Ranking rnk = rankingRepository.findById(aposta.getUsuario().getId());
-			rnk.setPontuacaoProvisoria(0);			
-			// não posso limpar, pq pode haver outra partida acontecendo
-			// só limpa se não houver mais nenhum jogo acontecendo (ao vivo/iniciado) e não finalizado
-			rankingRepository.save(rnk);
 		}
 
 	}
@@ -505,6 +528,10 @@ public class ConfiguracaoService {
 		if (partida == null) {
 			throw new Bolao10Exception("Partida não encontrada!");
 		}
+		
+		ApostaPartida aposta = apostaRepository.calcularApostasPorPartida(partida.getId());
+		partida.setAposta(aposta);
+			
 		return partida;
 	}
 

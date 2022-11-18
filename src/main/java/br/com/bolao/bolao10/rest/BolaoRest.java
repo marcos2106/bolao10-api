@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.bolao.bolao10.model.ApostaFilter;
+import br.com.bolao.bolao10.model.RankingCustomizadoRequest;
 import br.com.bolao.bolao10.service.BolaoService;
 
 @RestController
@@ -84,7 +86,7 @@ public class BolaoRest extends BaseRest {
 	public @ResponseBody ResponseEntity<?> carregarDadosUsuarioGrafico(@PathVariable Long idUsuario) {
 		return createObjectReturn(bolaoService.carregarDadosUsuarioGrafico(idUsuario));
 	}
-	
+
 	@GetMapping(value = "/aposta/grafico/{idPartida}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public @ResponseBody ResponseEntity<?> calcularApostasPorPartida(@PathVariable Long idPartida) {
 		return createObjectReturn(bolaoService.calcularApostasPorPartida(idPartida));
@@ -93,6 +95,29 @@ public class BolaoRest extends BaseRest {
 	@GetMapping(value = "/pontuacao", produces = MediaType.APPLICATION_JSON_VALUE)
 	public @ResponseBody ResponseEntity<?> carregarPontuacaoPartidas() {
 		return createObjectReturn(bolaoService.carregarPontuacaoPartidas());
+	}
+
+	@GetMapping(value = "/ranking/usuario", produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody ResponseEntity<?> carregarRankingAtivo() {
+		return createObjectReturn(bolaoService.carregarRankingAtivo());
+	}
+
+	@GetMapping(value = "/ranking/usuario/{idUsuario}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody ResponseEntity<?> carregarRankingCustomizado(@PathVariable Long idUsuario) {
+		return createObjectReturn(bolaoService.carregarRankingCustomizado(idUsuario));
+	}
+
+	@PostMapping(value = "/ranking/usuario/{idUsuario}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody ResponseEntity<?> salvarRankingCustomizado
+			(@PathVariable Long idUsuario, @RequestBody RankingCustomizadoRequest ranking) {
+		bolaoService.salvarRankingCustomizado(idUsuario, ranking);
+		return createObjectReturn(Boolean.TRUE);
+	}
+
+	@DeleteMapping(value = "/ranking/usuario/{idRanking}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody ResponseEntity<?> apagarRankingCustomizado(@PathVariable Long idRanking) {
+		bolaoService.apagarRankingCustomizado(idRanking);
+		return createObjectReturn(Boolean.TRUE);
 	}
 
 }

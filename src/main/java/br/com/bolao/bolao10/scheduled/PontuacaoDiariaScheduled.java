@@ -22,7 +22,7 @@ public class PontuacaoDiariaScheduled {
 	 * 
 	 */
 	//roda 19h (após todos os jogos)
-	@Scheduled(cron = "0 0 19 * * *", zone = TIME_ZONE)
+	//@Scheduled(cron = "0 0 19 * * *", zone = TIME_ZONE)
 	public void execute() {
 		try {
 			bolaoService.atualizarPontuacaoDiaria();

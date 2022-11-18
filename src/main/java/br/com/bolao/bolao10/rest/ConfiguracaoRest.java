@@ -1,4 +1,3 @@
-
 package br.com.bolao.bolao10.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
