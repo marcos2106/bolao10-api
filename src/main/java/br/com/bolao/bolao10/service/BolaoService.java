@@ -444,14 +444,13 @@ public class BolaoService {
 			if (ranking.getId() == null) {
 				rc = new RankingCustomizado();
 				rc.setUsuario(usuario);
-
-				// adicionar a própria pessoa no ranking na criação do ranking se ela já apostou
-				if (usuario.getAposta()) {
-					listaRanking.add(rankingRepository.findById(idUsuario));
-				}
 			} else {
 				rc = rcRepository.findById(ranking.getId());
 			}
+
+			// adicionar a própria pessoa no ranking na hora de salvar
+			listaRanking.add(rankingRepository.findById(idUsuario));
+			
 			rc.setNome(ranking.getNome());
 
 			for (RankingUsuario rnkUsuario : ranking.getListaRankingUsuario()) {
