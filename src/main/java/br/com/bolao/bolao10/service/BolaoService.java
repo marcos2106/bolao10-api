@@ -489,9 +489,9 @@ public class BolaoService {
 		List<RankingCustomizado> listaRnkCu = rcRepository.carregarRankingCustomizado(idUsuario);
 
 		// não sei se precisa ordenar novamente, já que no salvar já ordena
-//		for (RankingCustomizado rc : listaRnkCu) {
-//			Collections.sort(rc.getListaRanking(), Comparator.comparing(Ranking::getPontuacao));
-//		}
+		for (RankingCustomizado rc : listaRnkCu) {
+			Collections.sort(rc.getListaRanking(), Comparator.comparing(Ranking::getPontuacao));
+		}
 		return listaRnkCu;
 	}
 
