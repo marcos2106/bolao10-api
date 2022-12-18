@@ -244,10 +244,10 @@ public class UserRepository extends GenericRepository {
 		List<HomeDepoisPlacarExato> listaPlacarExato = new ArrayList<HomeDepoisPlacarExato>();
 
 		StringBuilder sql = new StringBuilder();
-		sql.append(" select a.idusuario, count(*) as total from Aposta a ");
+		sql.append(" select a.idusuario, count(*) as total from aposta a ");
 		sql.append(" where a.pontuacao = 5 ");
 		sql.append(" group by a.idusuario  ");
-		sql.append(" order by total desc ");
+		sql.append(" order by total desc LIMIT 5 ");
 
 		try {
 			Query query = em.createNativeQuery(sql.toString()).setMaxResults(5);

@@ -108,25 +108,29 @@ public class ConfiguracaoService {
 
 			contabilizarPontuacaoColocacao(colocacao, colRequest);
 			
-			if (colocacao.getCampeao() == null && colRequest.getCampeao().getId() != null) {
+			if (colocacao == null) {
+				colocacao = new Colocacao();
+			}
+			
+			if ((colocacao == null || colocacao.getCampeao() == null) && colRequest.getCampeao().getId() != null) {
 				colocacao.setCampeao(selecaoRepository.findById(colRequest.getCampeao().getId()));
 			}
-			if (colocacao.getVice() == null && colRequest.getVice().getId() != null) {
+			if ((colocacao == null || colocacao.getVice() == null) && colRequest.getVice().getId() != null) {
 				colocacao.setVice(selecaoRepository.findById(colRequest.getVice().getId()));
 			}
-			if (colocacao.getTerceiro() == null && colRequest.getTerceiro().getId() != null) {
+			if ((colocacao == null || colocacao.getTerceiro() == null) && colRequest.getTerceiro().getId() != null) {
 				colocacao.setTerceiro(selecaoRepository.findById(colRequest.getTerceiro().getId()));
 			}
-			if (colocacao.getQuarto() == null && colRequest.getQuarto().getId() != null) {
+			if ((colocacao == null || colocacao.getQuarto() == null) && colRequest.getQuarto().getId() != null) {
 				colocacao.setQuarto(selecaoRepository.findById(colRequest.getQuarto().getId()));
 			}
-			if (colocacao.getArtilharia() == null && colRequest.getArtilharia().getId() != null) {
+			if ((colocacao == null || colocacao.getArtilharia() == null) && colRequest.getArtilharia().getId() != null) {
 				colocacao.setArtilharia(selecaoRepository.findById(colRequest.getArtilharia().getId()));
 			}
 			colocacaoRepository.save(colocacao);
 			
-			if (colocacao.getCampeao() != null && colocacao.getVice() != null 
-					&& colocacao.getTerceiro() != null && colocacao.getQuarto() != null) {
+			if ((colocacao == null || colocacao.getCampeao() != null) && (colocacao == null || colocacao.getVice() != null) 
+					&& (colocacao == null || colocacao.getTerceiro() != null) && (colocacao == null || colocacao.getQuarto() != null)) {
 				acRepository.zerarPontuacaoColocacao();
 			}
 			
@@ -145,7 +149,7 @@ public class ConfiguracaoService {
 			Integer pontuacaoRnk = Constants.APOSTA_ERRADA; // zerar a pontuação do Rnk
 
 			// Se ainda não foi registrado o campeão, e se eu estou informando o campeão
-			if (colocacao.getCampeao() == null && colRequest.getCampeao().getId() != null) {
+			if ((colocacao == null || colocacao.getCampeao() == null) && colRequest.getCampeao().getId() != null) {
 
 				Integer pontosCampeao = Constants.APOSTA_ERRADA;
 				if (colRequest.getCampeao().getId() == ac.getCampeao().getId()) {
@@ -163,7 +167,7 @@ public class ConfiguracaoService {
 				}
 				pontuacaoRnk += pontosCampeao;
 			}
-			if (colocacao.getVice() == null && colRequest.getVice().getId() != null) {
+			if ((colocacao == null || colocacao.getVice() == null) && colRequest.getVice().getId() != null) {
 
 				Integer pontosVice = Constants.APOSTA_ERRADA;
 				if (colRequest.getVice().getId() == ac.getVice().getId()) {
@@ -181,7 +185,7 @@ public class ConfiguracaoService {
 				}
 				pontuacaoRnk += pontosVice;
 			}
-			if (colocacao.getTerceiro() == null && colRequest.getTerceiro().getId() != null) {
+			if ((colocacao == null || colocacao.getTerceiro() == null) && colRequest.getTerceiro().getId() != null) {
 
 				Integer pontosTerceiro = Constants.APOSTA_ERRADA;
 				if (colRequest.getTerceiro().getId() == ac.getTerceiro().getId()) {
@@ -199,7 +203,7 @@ public class ConfiguracaoService {
 				}
 				pontuacaoRnk += pontosTerceiro;
 			}
-			if (colocacao.getQuarto() == null && colRequest.getQuarto().getId() != null) {
+			if ((colocacao == null || colocacao.getQuarto() == null) && colRequest.getQuarto().getId() != null) {
 
 				Integer pontosQuarto = Constants.APOSTA_ERRADA;
 				if (colRequest.getQuarto().getId() == ac.getQuarto().getId()) {
@@ -217,7 +221,7 @@ public class ConfiguracaoService {
 				}
 				pontuacaoRnk += pontosQuarto;
 			}
-			if (colocacao.getArtilharia() == null && colRequest.getArtilharia().getId() != null) {				
+			if ((colocacao == null || colocacao.getArtilharia() == null) && colRequest.getArtilharia().getId() != null) {				
 
 				Integer pontosArt = Constants.APOSTA_ERRADA;
 				if (colRequest.getArtilharia().getId() == ac.getArtilharia().getId()) {
