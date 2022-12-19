@@ -121,6 +121,10 @@ public class BolaoService {
 		}
 	}
 
+	private boolean isBolaoAntes() {
+		return configuracaoService.situacaoAtiva().getId() == Constants.SITUACAO_ANTES;
+	}
+
 	private boolean isBolaoDurante() {
 		return configuracaoService.situacaoAtiva().getId() == Constants.SITUACAO_DURANTE;
 	}
@@ -211,7 +215,7 @@ public class BolaoService {
 
 	public List<Aposta> carregarApostaPorPartida(Long idPartida) {
 
-		if (isBolaoDurante()) {
+		if (!isBolaoAntes()) {
 
 			if (idPartida == null) {
 				throw new Bolao10Exception("Apostas não encontradas!");

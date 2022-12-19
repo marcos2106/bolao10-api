@@ -247,7 +247,7 @@ public class UserRepository extends GenericRepository {
 		sql.append(" select a.idusuario, count(*) as total from aposta a ");
 		sql.append(" where a.pontuacao = 5 ");
 		sql.append(" group by a.idusuario  ");
-		sql.append(" order by total desc LIMIT 5 ");
+		sql.append(" order by total desc ");
 
 		try {
 			Query query = em.createNativeQuery(sql.toString()).setMaxResults(5);
@@ -264,23 +264,49 @@ public class UserRepository extends GenericRepository {
 		return listaPlacarExato;
 	}
 
-	public List<Usuario> carregarNenhumPlacar() {
+	@SuppressWarnings("unchecked")
+	public List<HomeDepoisPlacarExato> carregarNenhumPlacar() {
 
+		List<HomeDepoisPlacarExato> listaPlacarExato = new ArrayList<HomeDepoisPlacarExato>();
+
+		StringBuilder sql = new StringBuilder();
+		sql.append(" select a.idusuario, count(*) as total from aposta a ");
+		sql.append(" where a.pontuacao = 0 ");
+		sql.append(" group by a.idusuario  ");
+		sql.append(" order by total desc ");
+
+		try {
+			Query query = em.createNativeQuery(sql.toString()).setMaxResults(5);
+
+			List<Object[]> objects = query.getResultList();
+			objects.forEach(o -> {
+				HomeDepoisPlacarExato placarExato = new HomeDepoisPlacarExato();
+				placarExato.setUsuario(findById(getLongValue(o, 1)));
+				placarExato.setQuantidade(getIntegerValue(o, 2));
+				listaPlacarExato.add(placarExato);
+			});
+		}
+		catch (Exception e) {}
+		return listaPlacarExato;
+	}
+	
+	public List<Usuario> OLD_carregarNenhumPlacar() {
+		
 		List<Usuario> listaNenhumPlacar = new ArrayList<Usuario>();
-
+		
 		List<Usuario> participantes = carregarParticipantes();
 		int qntd = 0;
 		for (Usuario usuario : participantes) {
-
+			
 			StringBuilder sql = new StringBuilder();
 			sql.append(" select a from Aposta a ");
 			sql.append(" where a.pontuacao = 5 ");
 			sql.append(" and a.usuario.id = :idusuario ");
-
+			
 			try {
 				TypedQuery<Aposta> query = em.createQuery(sql.toString(), Aposta.class);
 				query.setParameter("idusuario", usuario.getId());
-
+				
 				if (query.getResultList() != null && query.getResultList().isEmpty()) {
 					listaNenhumPlacar.add(usuario);
 					qntd++;
@@ -305,8 +331,8 @@ public class UserRepository extends GenericRepository {
 		sql.append(" select a.idusuario from aposta_colocacao a ");
 		sql.append(" where a.pontoscampeao = "+ Constants.APOSTA_CAMPEAO +"  ");
 		sql.append(" and a.pontosvice = "+ Constants.APOSTA_VICE +" ");
-		sql.append(" and a.pontosterceiro = "+ Constants.APOSTA_TERCEIRO +" ");
-		sql.append(" and a.pontosquarto = "+ Constants.APOSTA_QUARTO +" ");
+//		sql.append(" and a.pontosterceiro = "+ Constants.APOSTA_TERCEIRO +" ");
+//		sql.append(" and a.pontosquarto = "+ Constants.APOSTA_QUARTO +" ");
 		sql.append(" group by a.idusuario   ");
 
 		try {

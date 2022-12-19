@@ -12,7 +12,7 @@ public class HomeDepoisCuriosidade implements Serializable {
 
 	private List<HomeDepoisPlacarExato> listaPlacarExato;
 	private List<Usuario> listaColocado;
-	private List<Usuario> listaNenhumPlacar;
+	private List<HomeDepoisPlacarExato> listaNenhumPlacar;
 	private List<Usuario> listaNenhumColocado;
 	
 	
@@ -32,11 +32,11 @@ public class HomeDepoisCuriosidade implements Serializable {
 		this.listaColocado = listaColocado;
 	}
 	
-	public List<Usuario> getListaNenhumPlacar() {
+	public List<HomeDepoisPlacarExato> getListaNenhumPlacar() {
 		return listaNenhumPlacar;
 	}
 	
-	public void setListaNenhumPlacar(List<Usuario> listaNenhumPlacar) {
+	public void setListaNenhumPlacar(List<HomeDepoisPlacarExato> listaNenhumPlacar) {
 		this.listaNenhumPlacar = listaNenhumPlacar;
 	}
 	
