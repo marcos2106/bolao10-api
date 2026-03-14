@@ -51,7 +51,7 @@ public class PartidaRepository extends GenericRepository {
 	public List<Partida> carregarPartidasTabela() {
 		
 		StringBuilder sql = new StringBuilder();
-		sql.append(" select p from Partida p order by p.dataHora ");
+		sql.append(" select p from Partida p order by p.fase, p.rodada, p.dataHora, p.id ");
 		
 		TypedQuery<Partida> query = em.createQuery(sql.toString(), Partida.class);
 		try {

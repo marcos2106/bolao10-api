@@ -101,16 +101,12 @@ public class ConfiguracaoService {
 	public void salvarColocacao(ColocacaoRequest colRequest) {
 
 		try {
-			Colocacao colocacao = colocacaoRepository.findById(1L);
+			Colocacao colocacao = colocacaoRepository.carregarColocacao();
 			
 			// Atualiza as posições antes das contabilizações das colocações
 			contabilizaPosicaoRanking();
 
 			contabilizarPontuacaoColocacao(colocacao, colRequest);
-			
-			if (colocacao == null) {
-				colocacao = new Colocacao();
-			}
 			
 			if ((colocacao == null || colocacao.getCampeao() == null) && colRequest.getCampeao().getId() != null) {
 				colocacao.setCampeao(selecaoRepository.findById(colRequest.getCampeao().getId()));
