@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import br.com.bolao.bolao10.domain.Classificacao;
-import br.com.bolao.bolao10.domain.Partida;
 import br.com.bolao.bolao10.domain.Selecao;
 
 @Repository

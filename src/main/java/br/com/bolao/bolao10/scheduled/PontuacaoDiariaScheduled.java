@@ -3,7 +3,6 @@ package br.com.bolao.bolao10.scheduled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import br.com.bolao.bolao10.service.BolaoService;
@@ -12,7 +11,7 @@ import br.com.bolao.bolao10.service.BolaoService;
 public class PontuacaoDiariaScheduled {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PontuacaoDiariaScheduled.class);
-	private static final String TIME_ZONE = "America/Sao_Paulo";
+	//private static final String TIME_ZONE = "America/Sao_Paulo";
 
 	@Autowired
 	private BolaoService bolaoService;
