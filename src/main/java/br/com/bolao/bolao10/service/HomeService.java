@@ -113,7 +113,7 @@ public class HomeService {
 			ApostaPartida aposta = apostaRepository.calcularApostasPorPartida(partida.getId());
 			partida.setAposta(aposta);
 		}
-		if (listaPartidas != null) {
+		if (listaPartidas != null && listaPartidas.size() > 0) {
 			pp.setPartida1(listaPartidas.get(0));
 			if (listaPartidas.size() > 1) {
 				pp.setPartida2(listaPartidas.get(1));
