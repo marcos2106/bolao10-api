@@ -152,16 +152,16 @@ public class ConfiguracaoService {
 			if ((colocacao == null || colocacao.getCampeao() == null) && colRequest.getCampeao().getId() != null) {
 
 				Integer pontosCampeao = Constants.APOSTA_ERRADA;
-				if (colRequest.getCampeao().getId() == ac.getCampeao().getId()) {
+				if (colRequest.getCampeao().getId().longValue() == ac.getCampeao().getId().longValue()) {
 					pontosCampeao = Constants.APOSTA_CAMPEAO;
 					ac.setPontosCampeao(pontosCampeao);
-				} else if (colRequest.getCampeao().getId() == ac.getVice().getId()) {
+				} else if (colRequest.getCampeao().getId().longValue() == ac.getVice().getId().longValue()) {
 					pontosCampeao = Constants.APOSTA_POSICAO_INCORRETA;
 					ac.setPontosVice(pontosCampeao);
-				} else if (colRequest.getCampeao().getId() == ac.getTerceiro().getId()) {
+				} else if (colRequest.getCampeao().getId().longValue() == ac.getTerceiro().getId().longValue()) {
 					pontosCampeao = Constants.APOSTA_POSICAO_INCORRETA;
 					ac.setPontosTerceiro(pontosCampeao);
-				} else if (colRequest.getCampeao().getId() == ac.getQuarto().getId()) {
+				} else if (colRequest.getCampeao().getId().longValue() == ac.getQuarto().getId().longValue()) {
 					pontosCampeao = Constants.APOSTA_POSICAO_INCORRETA;
 					ac.setPontosQuarto(pontosCampeao);
 				}
@@ -170,16 +170,16 @@ public class ConfiguracaoService {
 			if ((colocacao == null || colocacao.getVice() == null) && colRequest.getVice().getId() != null) {
 
 				Integer pontosVice = Constants.APOSTA_ERRADA;
-				if (colRequest.getVice().getId() == ac.getVice().getId()) {
+				if (colRequest.getVice().getId().longValue() == ac.getVice().getId().longValue()) {
 					pontosVice = Constants.APOSTA_VICE;
 					ac.setPontosVice(pontosVice);
-				} else if (colRequest.getVice().getId() == ac.getCampeao().getId()) {
+				} else if (colRequest.getVice().getId().longValue() == ac.getCampeao().getId().longValue()) {
 					pontosVice = Constants.APOSTA_POSICAO_INCORRETA;
 					ac.setPontosCampeao(pontosVice);
-				} else if (colRequest.getVice().getId() == ac.getTerceiro().getId()) {
+				} else if (colRequest.getVice().getId().longValue() == ac.getTerceiro().getId().longValue()) {
 					pontosVice = Constants.APOSTA_POSICAO_INCORRETA;
 					ac.setPontosTerceiro(pontosVice);
-				} else if (colRequest.getVice().getId() == ac.getQuarto().getId()) {
+				} else if (colRequest.getVice().getId().longValue() == ac.getQuarto().getId().longValue()) {
 					pontosVice = Constants.APOSTA_POSICAO_INCORRETA;
 					ac.setPontosQuarto(pontosVice);
 				}
@@ -188,16 +188,16 @@ public class ConfiguracaoService {
 			if ((colocacao == null || colocacao.getTerceiro() == null) && colRequest.getTerceiro().getId() != null) {
 
 				Integer pontosTerceiro = Constants.APOSTA_ERRADA;
-				if (colRequest.getTerceiro().getId() == ac.getTerceiro().getId()) {
+				if (colRequest.getTerceiro().getId().longValue() == ac.getTerceiro().getId().longValue()) {
 					pontosTerceiro = Constants.APOSTA_TERCEIRO;
 					ac.setPontosTerceiro(pontosTerceiro);
-				} else if (colRequest.getTerceiro().getId() == ac.getCampeao().getId()) {
+				} else if (colRequest.getTerceiro().getId().longValue() == ac.getCampeao().getId().longValue()) {
 					pontosTerceiro = Constants.APOSTA_POSICAO_INCORRETA;
 					ac.setPontosCampeao(pontosTerceiro);
-				} else if (colRequest.getTerceiro().getId() == ac.getVice().getId()) {
+				} else if (colRequest.getTerceiro().getId().longValue() == ac.getVice().getId().longValue()) {
 					pontosTerceiro = Constants.APOSTA_POSICAO_INCORRETA;
 					ac.setPontosVice(pontosTerceiro);
-				} else if (colRequest.getTerceiro().getId() == ac.getQuarto().getId()) {
+				} else if (colRequest.getTerceiro().getId().longValue() == ac.getQuarto().getId().longValue()) {
 					pontosTerceiro = Constants.APOSTA_POSICAO_INCORRETA;
 					ac.setPontosQuarto(pontosTerceiro);
 				}
@@ -206,16 +206,16 @@ public class ConfiguracaoService {
 			if ((colocacao == null || colocacao.getQuarto() == null) && colRequest.getQuarto().getId() != null) {
 
 				Integer pontosQuarto = Constants.APOSTA_ERRADA;
-				if (colRequest.getQuarto().getId() == ac.getQuarto().getId()) {
+				if (colRequest.getQuarto().getId().longValue() == ac.getQuarto().getId().longValue()) {
 					pontosQuarto = Constants.APOSTA_QUARTO;
 					ac.setPontosQuarto(pontosQuarto);
-				} else if (colRequest.getQuarto().getId() == ac.getCampeao().getId()) {
+				} else if (colRequest.getQuarto().getId().longValue() == ac.getCampeao().getId().longValue()) {
 					pontosQuarto = Constants.APOSTA_POSICAO_INCORRETA;
 					ac.setPontosCampeao(pontosQuarto);
-				} else if (colRequest.getQuarto().getId() == ac.getVice().getId()) {
+				} else if (colRequest.getQuarto().getId().longValue() == ac.getVice().getId().longValue()) {
 					pontosQuarto = Constants.APOSTA_POSICAO_INCORRETA;
 					ac.setPontosVice(pontosQuarto);
-				} else if (colRequest.getQuarto().getId() == ac.getTerceiro().getId()) {
+				} else if (colRequest.getQuarto().getId().longValue() == ac.getTerceiro().getId().longValue()) {
 					pontosQuarto = Constants.APOSTA_POSICAO_INCORRETA;
 					ac.setPontosTerceiro(pontosQuarto);
 				}
@@ -224,7 +224,7 @@ public class ConfiguracaoService {
 			if ((colocacao == null || colocacao.getArtilharia() == null) && colRequest.getArtilharia().getId() != null) {				
 
 				Integer pontosArt = Constants.APOSTA_ERRADA;
-				if (colRequest.getArtilharia().getId() == ac.getArtilharia().getId()) {
+				if (colRequest.getArtilharia().getId().longValue() == ac.getArtilharia().getId().longValue()) {
 					pontosArt = Constants.APOSTA_ARTILHEIRO;
 				}
 				ac.setPontosArtilharia(pontosArt);

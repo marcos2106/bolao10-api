@@ -384,7 +384,7 @@ public class BolaoService {
 
 		List<PontuacaoUsuarioPartida> listaPontuacao = new ArrayList<PontuacaoUsuarioPartida>();
 
-		if (configuracaoService.situacaoAtiva().getId() == Constants.SITUACAO_ANTES) {
+		if (configuracaoService.situacaoAtiva().getId().intValue() == Constants.SITUACAO_ANTES) {
 
 			List<Usuario> listaUsuario = userRepository.carregarParticipantes();
 
@@ -464,7 +464,7 @@ public class BolaoService {
 					listaRanking.add(rnk);
 				}
 			}
-			Collections.sort(listaRanking, Comparator.comparing(Ranking::getPontuacao));
+			Collections.sort(listaRanking, Comparator.comparing(Ranking::getPontuacao).reversed());
 
 			rc.setListaRanking(listaRanking);
 
