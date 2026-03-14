@@ -41,6 +41,9 @@ public class UserService {
 		if (user == null) {
 			throw new Bolao10Exception("Login ou Senha inválido.");
 		}
+		if (!user.getAtivo()) {
+			throw new Bolao10Exception("Usuário inativo. Entre em contato com o administrador.");
+		}
 		if (user.getPrimeiro()) {
 			return "primeiro$"+ user.getId();
 		}
