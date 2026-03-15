@@ -113,4 +113,17 @@ public class ApostaColocacaoRepository extends GenericRepository {
 		em.createNativeQuery(sql).executeUpdate();
 	}
 
+	/** Retorna o ID do primeiro usuário que apostou no artilheiro provisório — Badge Goleador */
+	public Long carregarIdUsuarioAcertouArtilheiro(Long idSelecaoArtilheiro) {
+		try {
+			String sql = "select c.usuario.id from ApostaColocacao c "
+					+ "where c.artilharia.id = :idSelecao";
+			List<Long> result = em.createQuery(sql, Long.class)
+					.setParameter("idSelecao", idSelecaoArtilheiro)
+					.setMaxResults(1)
+					.getResultList();
+			return result.isEmpty() ? null : result.get(0);
+		} catch (Exception e) { return null; }
+	}
+
 }

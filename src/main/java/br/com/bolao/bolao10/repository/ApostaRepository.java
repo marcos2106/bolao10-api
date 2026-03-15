@@ -168,4 +168,60 @@ public class ApostaRepository extends GenericRepository {
 		return (pontuacaoBD == null) ? 0 : pontuacaoBD.intValue();		
 	}
 
+	/** Retorna o ID do usuário com mais placares exatos (pontuacao = 5) — Badge Beteiro */
+	public Long carregarIdUsuarioMaisPlacarExato() {
+		try {
+			String sql = "select a.usuario.id from Aposta a where a.pontuacao = 5 "
+					+ "group by a.usuario.id order by count(a) desc";
+			List<Long> result = em.createQuery(sql, Long.class).setMaxResults(1).getResultList();
+			return result.isEmpty() ? null : result.get(0);
+		} catch (Exception e) { return null; }
+	}
+
+	/** Retorna o ID do usuário com mais placares zerados (pontuacao = 0) — Badge Gato Preto */
+	public Long carregarIdUsuarioMaisZerou() {
+		try {
+			String sql = "select a.usuario.id from Aposta a where a.pontuacao = 0 "
+					+ "group by a.usuario.id order by count(a) desc";
+			List<Long> result = em.createQuery(sql, Long.class).setMaxResults(1).getResultList();
+			return result.isEmpty() ? null : result.get(0);
+		} catch (Exception e) { return null; }
+	}
+
+	/** Retorna o ID do usuário com mais empates acertados — Badge Meia Boca */
+	public Long carregarIdUsuarioMaisEmpate() {
+		try {
+			// Empate acertado: apostou empate E a partida empatou (placarA = placarB e pontuacao > 0)
+			String sql = "select a.usuario.id from Aposta a "
+					+ "where a.placarA = a.placarB and a.pontuacao is not null and a.pontuacao > 0 "
+					+ "group by a.usuario.id order by count(a) desc";
+			List<Long> result = em.createQuery(sql, Long.class).setMaxResults(1).getResultList();
+			return result.isEmpty() ? null : result.get(0);
+		} catch (Exception e) { return null; }
+	}
+
+	/**
+	 * Retorna IDs dos usuários que zeraram pontos na ÚLTIMA partida calculada — Badge Empacado.
+	 * Considera a última partida que teve pontuação calculada (pontuacao not null).
+	 */
+	@SuppressWarnings("unchecked")
+	public java.util.List<Long> carregarIdsUsuariosEmpacados() {
+		try {
+			// Encontra o ID da última partida que teve pontuação calculada
+			String sqlUltimaPartida = "select a.partida.id from Aposta a "
+					+ "where a.pontuacao is not null "
+					+ "order by a.partida.dataHora desc";
+			List<Long> idsUltimaPartida = em.createQuery(sqlUltimaPartida, Long.class).setMaxResults(1).getResultList();
+			if (idsUltimaPartida.isEmpty()) return new java.util.ArrayList<>();
+			Long idUltimaPartida = idsUltimaPartida.get(0);
+
+			// Busca usuários que zeraram nessa partida
+			String sql = "select a.usuario.id from Aposta a "
+					+ "where a.partida.id = :idPartida and a.pontuacao = 0";
+			return em.createQuery(sql, Long.class)
+					.setParameter("idPartida", idUltimaPartida)
+					.getResultList();
+		} catch (Exception e) { return new java.util.ArrayList<>(); }
+	}
+
 }
