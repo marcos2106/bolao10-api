@@ -52,6 +52,7 @@ public class BadgeService {
 	@Autowired private ApostaColocacaoRepository apostaColocacaoRepository;
 	@Autowired private ColocacaoRepository colocacaoRepository;
 	@Autowired private UserRepository userRepository;
+	@Autowired private UserService userService;
 
 	// ─────────────────────────────────────────────
 	// API pública
@@ -121,6 +122,17 @@ public class BadgeService {
 		try { aplicarBadgeMeiaBoca(); }      catch (Exception e) { LOGGER.error("Erro badge MeiaBoca", e); }
 		try { aplicarBadgeEmpacado(); }      catch (Exception e) { LOGGER.error("Erro badge Empacado", e); }
 		try { aplicarBadgeGoleador(); }      catch (Exception e) { LOGGER.error("Erro badge Goleador", e); }
+
+		// Atualizar nível de todos os usuários com base na pontuação atual do Ranking
+		try {
+			List<Ranking> todosRanking = rankingRepository.carregarRanking();
+			if (todosRanking != null) {
+				for (Ranking r : todosRanking) {
+					userService.atualizarNivel(r.getUsuario().getId(), r.getPontuacao());
+				}
+			}
+		} catch (Exception e) { LOGGER.error("Erro ao atualizar níveis", e); }
+
 		LOGGER.info("Atualização de Badges concluída.");
 	}
 

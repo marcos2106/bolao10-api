@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.bolao.bolao10.domain.Usuario;
+import br.com.bolao.bolao10.domain.enums.NivelUsuarioEnum;
 import br.com.bolao.bolao10.domain.enums.UserProfile;
 import br.com.bolao.bolao10.exception.Bolao10Exception;
 import br.com.bolao.bolao10.model.UserLoginRequest;
@@ -218,6 +219,31 @@ public class UserService {
 		userRepository.save(user);
 		
 		return jwtService.createJwtToken(user);
+	}
+	/**
+	 * Calcula e, se necessário, persiste o novo nível do usuário com base na pontuação total.
+	 * Só grava no banco se o nível calculado for diferente do atual (evita writes desnecessários).
+	 *
+	 * @param idUsuario      ID do usuário
+	 * @param pontuacaoTotal pontuação acumulada atual
+	 */
+	@Transactional
+	public void atualizarNivel(Long idUsuario, Integer pontuacaoTotal) {
+		try {
+			Usuario usuario = userRepository.findById(idUsuario);
+			if (usuario == null) return;
+
+			NivelUsuarioEnum novoNivel = NivelUsuarioEnum.calcularNivel(pontuacaoTotal);
+
+			// Só persiste se o nível mudou
+			if (!novoNivel.equals(usuario.getNivel())) {
+				usuario.setNivel(novoNivel);
+				userRepository.save(usuario);
+			}
+		} catch (Exception e) {
+			// Não deve interromper o fluxo principal por erro de nível
+			org.slf4j.LoggerFactory.getLogger(getClass()).warn("Erro ao atualizar nível do usuário {}: {}", idUsuario, e.getMessage());
+		}
 	}
 
 }

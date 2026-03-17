@@ -17,6 +17,7 @@ import javax.persistence.Transient;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import br.com.bolao.bolao10.domain.enums.NivelUsuarioEnum;
 import br.com.bolao.bolao10.domain.enums.UserProfile;
 import br.com.bolao.bolao10.support.Strings;
 
@@ -61,6 +62,10 @@ public class Usuario implements Serializable {
 	
 	@Column(name = "primeiro", nullable = false, columnDefinition = "CHAR(1) DEFAULT 1")
 	private Boolean primeiro;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "nivel", nullable = true, columnDefinition = "VARCHAR(20)")
+	private NivelUsuarioEnum nivel;
 
 	@Column(name = "avatar", nullable = false, columnDefinition = "VARCHAR(100)")
 	private String avatar;
@@ -210,6 +215,14 @@ public class Usuario implements Serializable {
 
 	public void setPrimeiro(Boolean primeiro) {
 		this.primeiro = primeiro;
+	}
+
+	public NivelUsuarioEnum getNivel() {
+		return nivel;
+	}
+
+	public void setNivel(NivelUsuarioEnum nivel) {
+		this.nivel = nivel;
 	}
 
 	@Override
