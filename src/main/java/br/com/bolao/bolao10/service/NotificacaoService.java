@@ -65,18 +65,6 @@ public class NotificacaoService {
 		int indiceSorteado = random.nextInt(ultimas.size());
 		return ultimas.get(indiceSorteado);
 	}
-
-	/**
-	 * Retorna a lista completa de notificações com suporte a paginação.
-	 * 
-	 * @param startPosition posição inicial
-	 * @param maxResult limite de registros
-	 * @return List de notificações correspondentes à página
-	 */
-	@Transactional(readOnly = true)
-	public List<Notificacao> obterTodasPaginado(int pagina, int maxResult) {
-		return notificacaoRepository.obterTodasPaginado(pagina, maxResult);
-	}
 	
 	@Transactional(readOnly = true)
 	public Page<Notificacao> listar(int page, int size) {
