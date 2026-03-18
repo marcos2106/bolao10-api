@@ -36,10 +36,14 @@ import br.com.bolao.bolao10.repository.SituacaoRepository;
 import br.com.bolao.bolao10.repository.UserRepository;
 import br.com.bolao.bolao10.support.Constants;
 import br.com.bolao.bolao10.support.Strings;
+import br.com.bolao.bolao10.domain.enums.TipoNotificacaoEnum;
 
 @Service
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 public class ConfiguracaoService {
+
+	@Autowired
+	private NotificacaoService notificacaoService;
 
 	@Autowired
 	private SelecaoRepository selecaoRepository;
@@ -289,6 +293,8 @@ public class ConfiguracaoService {
 
 	private void contabilizarPontuacaoRanking() {
 		
+		Usuario liderAntigo = rankingRepository.obterLiderRanking();
+
 		List<Ranking> listaRnk = rankingRepository.carregarRanking();
 		
 		for (Ranking rnk : listaRnk) {
@@ -303,16 +309,32 @@ public class ConfiguracaoService {
 			
 			rankingRepository.save(rnk);
 		}
+
+		/*
+		Usuario liderNovo = rankingRepository.obterLiderRanking();
+		if (liderNovo != null && liderAntigo != null && !liderNovo.getId().equals(liderAntigo.getId())) {
+			String msgLider = liderNovo.getNome() + " agora é o novo líder do nosso ranking!";
+			notificacaoService.salvarNotificacao(TipoNotificacaoEnum.NOVO_LIDER_RANKING, msgLider);
+		}
+		*/
 	}
 	
 	private void contabilizarPontuacaoRankingFinal() {
 		
+		Usuario liderAntigo = rankingRepository.obterLiderRanking();
+
 		List<Ranking> listaRnk = rankingRepository.carregarRanking();
 		
 		for (Ranking rnk : listaRnk) {
 			Integer pontuacao = apostaRepository.calcularPontuacaoProvisoria(rnk.getUsuario());
 			rnk.setPontuacaoProvisoria(pontuacao);
 			rankingRepository.save(rnk);
+		}
+		
+		Usuario liderNovo = rankingRepository.obterLiderRanking();
+		if (liderNovo != null && liderAntigo != null && !liderNovo.getId().equals(liderAntigo.getId())) {
+			String msgLider = liderNovo.getNome() + " agora é o novo líder do nosso ranking!";
+			notificacaoService.salvarNotificacao(TipoNotificacaoEnum.NOVO_LIDER_RANKING, msgLider);
 		}
 	}
 
@@ -338,6 +360,10 @@ public class ConfiguracaoService {
 			contabilizarPontuacaoFinal(partidaPersist);
 			contabilizarPontuacaoRankingFinal();
 
+			// Gatilho 4: Partida Finalizada
+			String msgPartida = "A partida " + partidaPersist.getSelecaoA().getNome() + " " + partidaPersist.getPlacarA() + "x" + partidaPersist.getPlacarB() + " " + partidaPersist.getSelecaoB().getNome() + " foi finalizada! Pontuação atualizada!";
+			notificacaoService.salvarNotificacao(TipoNotificacaoEnum.PARTIDA_FINALIZADA, msgPartida);
+
 		} catch (Exception e) {
 			throw new Bolao10Exception("Erro ao finalizar uma partida.");
 		}
@@ -358,6 +384,9 @@ public class ConfiguracaoService {
 	public void adicionarGol(Gol gol) {
 
 		try {
+			List<Jogador> artilhariaAntiga = jogadorRepository.carregarArtilharia();
+
+			// Lógica Negocial do Gol
 			Partida partida = partidaRepository.findById(gol.getPartida().getId());
 			gol.setPartida(partida);
 
@@ -381,6 +410,20 @@ public class ConfiguracaoService {
 			classificacaoService.contabilizarClassificacao(partidaPersist);
 			contabilizarPontuacao(partidaPersist);
 			contabilizarPontuacaoRanking();
+
+			// Verificação da Artilharia Pós-Gol
+			List<Jogador> artilhariaNova = jogadorRepository.carregarArtilharia();
+			
+			if (artilhariaNova != null && !artilhariaNova.isEmpty()) {
+				Jogador novoLiderAssoluto = artilhariaNova.get(0);
+				Long idNovoLider = novoLiderAssoluto.getId();
+				
+				// Se era vazio, ou se o 1º de antes não é mais o 1º de agora
+				if (artilhariaAntiga == null || artilhariaAntiga.isEmpty() || !artilhariaAntiga.get(0).getId().equals(idNovoLider)) {
+					String msgArtilheiro = "Atenção! " + novoLiderAssoluto.getNome() + " (" + novoLiderAssoluto.getSelecao().getNome() + ") assumiu a artilharia com " + novoLiderAssoluto.getGols() + " gols!";
+					notificacaoService.salvarNotificacao(TipoNotificacaoEnum.MUDANCA_ARTILHARIA, msgArtilheiro);
+				}
+			}
 
 		} catch (Exception e) {
 			throw new Bolao10Exception("Erro ao adicionar um gol.");

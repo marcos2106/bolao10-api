@@ -204,7 +204,6 @@ public class ApostaRepository extends GenericRepository {
 	 * Retorna IDs dos usuários que zeraram pontos na ÚLTIMA partida calculada — Badge Empacado.
 	 * Considera a última partida que teve pontuação calculada (pontuacao not null).
 	 */
-	@SuppressWarnings("unchecked")
 	public java.util.List<Long> carregarIdsUsuariosEmpacados() {
 		try {
 			// Encontra o ID da última partida que teve pontuação calculada

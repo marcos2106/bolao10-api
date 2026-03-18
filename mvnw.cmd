@@ -132,7 +132,8 @@ if exist %WRAPPER_JAR% (
 ) else (
     echo Couldn't find %WRAPPER_JAR%, downloading it ...
 	echo Downloading from: %DOWNLOAD_URL%
-    powershell -Command "(New-Object Net.WebClient).DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')"
+    if not exist "%MAVEN_PROJECTBASEDIR%\.mvn\wrapper" mkdir "%MAVEN_PROJECTBASEDIR%\.mvn\wrapper"
+    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object Net.WebClient).DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')"
     echo Finished downloading %WRAPPER_JAR%
 )
 @REM End of extension

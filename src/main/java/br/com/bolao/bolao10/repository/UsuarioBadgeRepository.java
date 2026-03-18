@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -60,7 +58,6 @@ public class UsuarioBadgeRepository extends GenericRepository {
 	 * Carrega um mapa idUsuario → lista de badges ativos.
 	 * Usado para carregar os badges de todo o ranking em uma única query.
 	 */
-	@SuppressWarnings("unchecked")
 	public Map<Long, List<Badge>> carregarMapaBadgesAtivos() {
 		Map<Long, List<Badge>> mapa = new HashMap<>();
 		String sql = "select ub from UsuarioBadge ub where ub.atual = true or ub.atual = '1'";

@@ -1,7 +1,6 @@
 package br.com.bolao.bolao10.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +23,8 @@ import br.com.bolao.bolao10.repository.RankingHistoricoRepository;
 import br.com.bolao.bolao10.repository.RankingRepository;
 import br.com.bolao.bolao10.repository.UsuarioBadgeRepository;
 import br.com.bolao.bolao10.repository.UserRepository;
+import br.com.bolao.bolao10.domain.enums.TipoNotificacaoEnum;
+import br.com.bolao.bolao10.domain.Usuario;
 
 /**
  * Serviço responsável por calcular e atualizar os Badges (selos de gamificação).
@@ -53,6 +54,7 @@ public class BadgeService {
 	@Autowired private ColocacaoRepository colocacaoRepository;
 	@Autowired private UserRepository userRepository;
 	@Autowired private UserService userService;
+	@Autowired private NotificacaoService notificacaoService;
 
 	// ─────────────────────────────────────────────
 	// API pública
@@ -84,9 +86,7 @@ public class BadgeService {
 			java.util.Map<String, Object> item = agrupado.get(idBadge);
 			
 			// Se o badge atual for verdadeiro (1), marca como ativo geral
-			if (Boolean.TRUE.equals(ub.getAtual()) || Integer.valueOf(1).equals(ub.getAtual())) {
-				item.put("ativo", true);
-			}
+			item.put("ativo", ub.getAtual());
 			
 			// Adiciona data à lista de conquistas
 			@SuppressWarnings("unchecked")
@@ -277,11 +277,16 @@ public class BadgeService {
 
 		// Cria o novo registro
 		UsuarioBadge ub = new UsuarioBadge();
-		ub.setUsuario(userRepository.findById(idUsuario));
+		Usuario usuario = userRepository.findById(idUsuario);
+		ub.setUsuario(usuario);
 		ub.setBadge(badge);
 		ub.setDataConquista(LocalDateTime.now());
 		ub.setAtual(Boolean.TRUE);
 		usuarioBadgeRepository.salvar(ub);
+
+		// Dispara a Notificacao Global
+		String msg = usuario.getNome() + " conquistou um novo selo de qualidade: " + badge.getNome();
+		notificacaoService.salvarNotificacao(TipoNotificacaoEnum.NOVO_BADGE, msg);
 
 		LOGGER.info("Badge '{}' atribuído ao usuário ID {}", badge.getNome(), idUsuario);
 	}

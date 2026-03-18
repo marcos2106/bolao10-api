@@ -22,6 +22,7 @@ import br.com.bolao.bolao10.domain.RankingCustomizado;
 import br.com.bolao.bolao10.domain.RankingHistorico;
 import br.com.bolao.bolao10.domain.Situacao;
 import br.com.bolao.bolao10.domain.Usuario;
+import br.com.bolao.bolao10.domain.enums.TipoNotificacaoEnum;
 import br.com.bolao.bolao10.exception.Bolao10Exception;
 import br.com.bolao.bolao10.model.ApostaColocacaoSelecao;
 import br.com.bolao.bolao10.model.ApostaFilter;
@@ -47,6 +48,9 @@ public class BolaoService {
 
 	@Autowired
 	private ConfiguracaoService configuracaoService;
+
+	@Autowired
+	private NotificacaoService notificacaoService;
 
 	@Autowired
 	private PartidaRepository partidaRepository;
@@ -140,6 +144,10 @@ public class BolaoService {
 
 		// zera a pontuação e seta como finalizada
 		finalizarAposta(usuarioLogado);
+
+		// Gatilho 5: Aposta Finalizada
+		String msgAposta = "Que maravilha! "+ usuarioLogado.getNome() +" finalizou sua aposta!";
+		notificacaoService.salvarNotificacao(TipoNotificacaoEnum.APOSTA_FINALIZADA, msgAposta);
 	}
 
 	@Transactional

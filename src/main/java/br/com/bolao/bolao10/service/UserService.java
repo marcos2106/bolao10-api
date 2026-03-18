@@ -13,6 +13,7 @@ import br.com.bolao.bolao10.domain.enums.UserProfile;
 import br.com.bolao.bolao10.exception.Bolao10Exception;
 import br.com.bolao.bolao10.model.UserLoginRequest;
 import br.com.bolao.bolao10.repository.UserRepository;
+import br.com.bolao.bolao10.domain.enums.TipoNotificacaoEnum;
 import br.com.bolao.bolao10.support.EmailValidator;
 import br.com.bolao.bolao10.support.Strings;
 
@@ -22,6 +23,9 @@ public class UserService {
 
 	@Autowired
 	private UserRepository userRepository;
+
+	@Autowired
+	private NotificacaoService notificacaoService;
 
 	@Autowired
 	private JWTService jwtService;
@@ -236,7 +240,17 @@ public class UserService {
 			NivelUsuarioEnum novoNivel = NivelUsuarioEnum.calcularNivel(pontuacaoTotal);
 
 			// Só persiste se o nível mudou
-			if (!novoNivel.equals(usuario.getNivel())) {
+			if (usuario.getNivel() != null && !novoNivel.equals(usuario.getNivel())) {
+				
+				// Salva Notificação Global
+				if (novoNivel.getCodigo() > usuario.getNivel().getCodigo()) {
+					String msg = usuario.getNome() + " chegou no nível " + novoNivel.getDescricao();
+					notificacaoService.salvarNotificacao(TipoNotificacaoEnum.SUBIU_NIVEL, msg);
+				}
+				
+				usuario.setNivel(novoNivel);
+				userRepository.save(usuario);
+			} else if (usuario.getNivel() == null) {
 				usuario.setNivel(novoNivel);
 				userRepository.save(usuario);
 			}
