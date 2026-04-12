@@ -310,13 +310,11 @@ public class ConfiguracaoService {
 			rankingRepository.save(rnk);
 		}
 
-		/*
 		Usuario liderNovo = rankingRepository.obterLiderRanking();
 		if (liderNovo != null && liderAntigo != null && !liderNovo.getId().equals(liderAntigo.getId())) {
 			String msgLider = liderNovo.getNome() + " agora é o novo líder do nosso ranking!";
 			notificacaoService.salvarNotificacao(TipoNotificacaoEnum.NOVO_LIDER_RANKING, msgLider);
 		}
-		*/
 	}
 	
 	private void contabilizarPontuacaoRankingFinal() {
@@ -606,6 +604,11 @@ public class ConfiguracaoService {
 		usuario.setPagamento(!usuario.getPagamento());
 		if (usuario.getPagamento()) {
 			usuario.setDataHoraPgto(LocalDateTime.now());
+
+			// Adicionar uma notificação de pagamento
+			String msg = usuario.getNome() + " fez o pagamento da inscrição no Bolão!";
+			notificacaoService.salvarNotificacao(TipoNotificacaoEnum.PAGAMENTO_REALIZADO, msg);
+			
 		} else {
 			usuario.setDataHoraPgto(null);			
 		}

@@ -83,7 +83,12 @@ public class Usuario implements Serializable {
 		
 	@Transient
 	private String confirmarsenha;
+		
+
 	
+	public String getNivelDescricao() {
+		return (this.nivel == null) ? "Sem Nível" : this.nivel.getDescricao();
+	}
 
 	public Long getId() {
 		return id;

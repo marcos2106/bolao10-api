@@ -9,8 +9,9 @@ public enum TipoNotificacaoEnum {
     NOVO_LIDER_RANKING("Novo líder do ranking", "fas fa-crown", "#e0a800", "#fff3cd"), // Dourado
     NOVO_BADGE("Ganhou um selo de qualidade", "fas fa-shield-alt", "#007bff", "#cce5ff"), // Azul
     PARTIDA_FINALIZADA("Partida encerrada", "far fa-futbol", "#17a2b8", "#d1ecf1"),   // Ciano
-    APOSTA_FINALIZADA("Aposta processada", "fas fa-receipt", "#6c757d", "#e2e3e5"),  // Cinza
-    MUDANCA_ARTILHARIA("Mudança na artilharia", "fas fa-star", "#fd7e14", "#f8d7da"); // Laranja
+    MUDANCA_ARTILHARIA("Mudança na artilharia", "fas fa-star", "#fd7e14", "#f8d7da"), // Laranja
+    PAGAMENTO_REALIZADO("Pagamento realizado!", "fas fa-dollar-sign", "#0dd30d", "#89ee97"), // verde
+    APOSTA_FINALIZADA("Aposta realizada!", "fas fa-fire-alt", "#9E4C4C", "#FFD2D2"); // Vermelho
 
     private final String descricao;
     private final String iconeClasse;

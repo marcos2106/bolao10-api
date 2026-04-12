@@ -22,6 +22,7 @@ import br.com.bolao.bolao10.domain.RankingCustomizado;
 import br.com.bolao.bolao10.domain.RankingHistorico;
 import br.com.bolao.bolao10.domain.Situacao;
 import br.com.bolao.bolao10.domain.Usuario;
+import br.com.bolao.bolao10.domain.enums.NivelUsuarioEnum;
 import br.com.bolao.bolao10.domain.enums.TipoNotificacaoEnum;
 import br.com.bolao.bolao10.exception.Bolao10Exception;
 import br.com.bolao.bolao10.model.ApostaColocacaoSelecao;
@@ -158,6 +159,7 @@ public class BolaoService {
 		Usuario usuario = userRepository.findById(idUsuario);
 		usuario.setAposta(Boolean.TRUE);
 		usuario.setDataHoraAposta(LocalDateTime.now());
+		usuario.setNivel(NivelUsuarioEnum.SEM_NIVEL);
 		userRepository.save(usuario);
 
 		Ranking rnk = rankingRepository.findById(idUsuario);
@@ -174,15 +176,18 @@ public class BolaoService {
 				throw new Bolao10Exception("A aposta do Grupo "+ partida.getSelecaoA().getGrupo() +" entre "+ partida.getSelecaoA().getNome() +" x "+ partida.getSelecaoB().getNome() +" está incompleta!");
 			}
 			if (partida.getFase()==2 && (partida.getPlacarA() == null || partida.getPlacarB() == null)) {
-				throw new Bolao10Exception("A aposta nas oitavas entre "+ partida.getSelecaoA().getNome() +" x "+ partida.getSelecaoB().getNome() +" está incompleta!");
+				throw new Bolao10Exception("A aposta nas 16 Avos entre "+ partida.getSelecaoA().getNome() +" x "+ partida.getSelecaoB().getNome() +" está incompleta!");
 			}
 			if (partida.getFase()==3 && (partida.getPlacarA() == null || partida.getPlacarB() == null)) {
-				throw new Bolao10Exception("A aposta nas quartas entre "+ partida.getSelecaoA().getNome() +" x "+ partida.getSelecaoB().getNome() +" está incompleta!");
+				throw new Bolao10Exception("A aposta nas oitavas entre "+ partida.getSelecaoA().getNome() +" x "+ partida.getSelecaoB().getNome() +" está incompleta!");
 			}
 			if (partida.getFase()==4 && (partida.getPlacarA() == null || partida.getPlacarB() == null)) {
+				throw new Bolao10Exception("A aposta nas quartas entre "+ partida.getSelecaoA().getNome() +" x "+ partida.getSelecaoB().getNome() +" está incompleta!");
+			}
+			if (partida.getFase()==5 && (partida.getPlacarA() == null || partida.getPlacarB() == null)) {
 				throw new Bolao10Exception("A aposta nas semis entre "+ partida.getSelecaoA().getNome() +" x "+ partida.getSelecaoB().getNome() +" está incompleta!");
 			}
-			if (partida.getFase()>=5 && (partida.getPlacarA() == null || partida.getPlacarB() == null)) {
+			if (partida.getFase()>=6 && (partida.getPlacarA() == null || partida.getPlacarB() == null)) {
 				throw new Bolao10Exception("A aposta nas finais entre "+ partida.getSelecaoA().getNome() +" x "+ partida.getSelecaoB().getNome() +" está incompleta!");
 			}
 		}
