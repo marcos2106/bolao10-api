@@ -36,6 +36,7 @@ import br.com.bolao.bolao10.repository.SituacaoRepository;
 import br.com.bolao.bolao10.repository.UserRepository;
 import br.com.bolao.bolao10.support.Constants;
 import br.com.bolao.bolao10.support.Strings;
+import br.com.bolao.bolao10.domain.enums.NivelUsuarioEnum;
 import br.com.bolao.bolao10.domain.enums.TipoNotificacaoEnum;
 
 @Service
@@ -259,6 +260,7 @@ public class ConfiguracaoService {
 		usuario.setTelefone(Strings.removeNoNumericChars(usuario.getTelefone()));
 		if (usuario.getId()==null) {
 			usuario.setPrimeiro(Boolean.TRUE);
+			usuario.setNivel(NivelUsuarioEnum.SEM_NIVEL);
 		}
 		return usuarioRepository.save(usuario);
 	}

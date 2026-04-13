@@ -166,6 +166,7 @@ public class BolaoService {
 		rnk.setUsuario(usuario);
 		rnk.setPontuacao(0);
 		rnk.setPosicaoAnterior(999);
+		rnk.setPontuacaoProvisoria(0);
 		rankingRepository.save(rnk);
 	}
 

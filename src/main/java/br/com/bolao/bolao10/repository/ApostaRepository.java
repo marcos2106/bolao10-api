@@ -157,7 +157,7 @@ public class ApostaRepository extends GenericRepository {
 
 		StringBuilder sql = new StringBuilder();
 		sql.append(" select sum(a.pontuacao_provisoria) as somaPontos ");
-		sql.append(" from bolao10.aposta a where a.idusuario = :idUsuario ");
+		sql.append(" from aposta a where a.idusuario = :idUsuario ");
 		sql.append(" and a.pontuacao_provisoria is not NULL ");
 
 		Query query = em.createNativeQuery(sql.toString());
