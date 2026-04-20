@@ -80,21 +80,27 @@ public class BadgeService {
 				java.util.Map<String, Object> item = new java.util.LinkedHashMap<>();
 				item.put("badge", ub.getBadge());
 				item.put("ativo", false);
-				item.put("conquistas", new java.util.ArrayList<String>());
+				item.put("conquistas", new java.util.ArrayList<java.util.Map<String, Object>>());
 				agrupado.put(idBadge, item);
 			}
 			java.util.Map<String, Object> item = agrupado.get(idBadge);
 			
 			// Se o badge atual for verdadeiro (1), marca como ativo geral
-			item.put("ativo", ub.getAtual());
+			if (Boolean.TRUE.equals(ub.getAtual())) {
+				item.put("ativo", true);
+			}
 			
-			// Adiciona data à lista de conquistas
+			// Adiciona conquista como mapa de data e atual
 			@SuppressWarnings("unchecked")
-			List<String> conquistas = (List<String>) item.get("conquistas");
+			List<java.util.Map<String, Object>> conquistas = (List<java.util.Map<String, Object>>) item.get("conquistas");
+			java.util.Map<String, Object> conquista = new java.util.HashMap<>();
 			if (ub.getDataConquista() != null) {
 				java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
-				conquistas.add(ub.getDataConquista().format(fmt));
+				conquista.put("data", ub.getDataConquista().format(fmt));
 			}
+			conquista.put("atual", Boolean.TRUE.equals(ub.getAtual()));
+			// Insere na posição 0 para inverter a ordem (mais antigos à esquerda e mais recentes/atual à direita)
+			conquistas.add(0, conquista);
 		}
 		
 		return new java.util.ArrayList<>(agrupado.values());
