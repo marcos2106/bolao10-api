@@ -1,5 +1,0 @@
-[build]
-cmd = "chmod +x build.sh && ./build.sh"
-
-[deploy]
-cmd = "java -Dserver.port=$PORT $JAVA_OPTS -jar target/*jar"
