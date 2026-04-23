@@ -14,7 +14,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>bolao10</name>
 	<description>API Bolao10</description>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -73,11 +73,7 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-tomcat</artifactId>
-			<scope>provided</scope>
-		</dependency>
+
 
 		<!-- Jackson - JAX-RS -->
 		<dependency>
@@ -245,37 +241,6 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 			
-			<!-- Plugin para copiar as configurações do Amazon BeanStalk -->
-			<plugin>
-				<artifactId>maven-war-plugin</artifactId>
-				<configuration>
-					<webResources>
-						<resource>
-							<directory>src/main/resources/ebextensions</directory>
-							<targetPath>.ebextensions</targetPath>
-							<filtering>true</filtering>
-						</resource>
-					</webResources>
-				</configuration>
-			</plugin>
-			
-			<plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
-			    <artifactId>maven-war-plugin</artifactId>
-			    <configuration>
-			        <webResources>
-			            <resource>
-			               <directory>src/main/resources/lib</directory>
-			               <targetPath>WEB-INF/lib</targetPath>
-			               <filtering>false</filtering>
-			               <includes>
-                                <include>**/*.jar</include>
-                            </includes>
-			            </resource>
-			        </webResources>
-			    </configuration>
-			</plugin>
-
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
