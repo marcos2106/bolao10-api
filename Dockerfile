@@ -25,4 +25,4 @@ COPY --from=builder /app/target/*jar /app/app.jar
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "java -Dserver.port=${PORT:-8080} -jar /app/app.jar"]
+CMD ["sh", "-c", "java --add-opens java.base/java.lang=ALL-UNNAMED -Dserver.port=${PORT:-8080} -jar /app/app.jar"]
