@@ -1,5 +1,5 @@
 # ---- Builder stage ----
-FROM eclipse-temurin:21-jdk AS builder
+FROM eclipse-temurin:8-jdk AS builder
 
 # Install Maven
 RUN apt-get update && \
@@ -12,12 +12,12 @@ WORKDIR /app
 COPY . .
 
 # Set JAVA_HOME explicitly and run the Maven build
-ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+ENV JAVA_HOME=/usr/local/openjdk-8
 RUN chmod +x mvnw && \
     ./mvnw -DoutputFile=target/mvn-dependency-list.log -B -DskipTests clean dependency:list install -Pproduction
 
 # ---- Runtime stage ----
-FROM eclipse-temurin:21-jre AS runtime
+FROM eclipse-temurin:8-jre AS runtime
 
 WORKDIR /app
 
