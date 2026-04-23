@@ -1,0 +1,5 @@
+[build]
+cmd = "chmod +x mvnw && ./mvnw -DoutputFile=target/mvn-dependency-list.log -B -DskipTests clean dependency:list install -Pproduction"
+
+[deploy]
+cmd = "java -Dserver.port=$PORT $JAVA_OPTS -jar target/*jar"
