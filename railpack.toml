@@ -1,5 +1,5 @@
 [build]
-cmd = "export JAVA_HOME=/root/.local/state/mise/installs/java/21.0.2 && chmod +x mvnw && ./mvnw -DoutputFile=target/mvn-dependency-list.log -B -DskipTests clean dependency:list install -Pproduction"
+cmd = "chmod +x build.sh && ./build.sh"
 
 [deploy]
 cmd = "java -Dserver.port=$PORT $JAVA_OPTS -jar target/*jar"
