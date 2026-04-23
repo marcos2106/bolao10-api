@@ -12,7 +12,7 @@ WORKDIR /app
 COPY . .
 
 # Set JAVA_HOME explicitly and run the Maven build
-ENV JAVA_HOME=/usr/local/openjdk-8
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 RUN chmod +x mvnw && \
     ./mvnw -DoutputFile=target/mvn-dependency-list.log -B -DskipTests clean dependency:list install -Pproduction
 
