@@ -1,10 +1,8 @@
 # ---- Builder stage ----
-FROM eclipse-temurin:8-jdk AS builder
+FROM openjdk:8-jdk-alpine AS builder
 
 # Install Maven
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends maven && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache maven
 
 WORKDIR /app
 
@@ -12,12 +10,12 @@ WORKDIR /app
 COPY . .
 
 # Set JAVA_HOME explicitly and run the Maven build
-ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
 RUN chmod +x mvnw && \
     ./mvnw -DoutputFile=target/mvn-dependency-list.log -B -DskipTests clean dependency:list install -Pproduction
 
 # ---- Runtime stage ----
-FROM eclipse-temurin:8-jre AS runtime
+FROM openjdk:8-jre-alpine AS runtime
 
 WORKDIR /app
 
