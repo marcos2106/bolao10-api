@@ -1,24 +1,20 @@
 # ---- Builder stage ----
-FROM openjdk:8-jdk-alpine AS builder
-
-# Install Maven
-RUN apk add --no-cache maven
+FROM eclipse-temurin:8-jdk AS builder
 
 WORKDIR /app
 
-# Copy project files
+# Copia projeto
 COPY . .
 
-# Set JAVA_HOME explicitly and run the Maven build
-ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
-RUN chmod +x mvnw && \
-    ./mvnw -DoutputFile=target/mvn-dependency-list.log -B -DskipTests clean dependency:list install -Pproduction
+# Usa Maven Wrapper para buildar o JAR
+RUN chmod +x mvnw && ./mvnw -B -DskipTests clean package
 
 # ---- Runtime stage ----
-FROM openjdk:8-jre-alpine AS runtime
+FROM eclipse-temurin:8-jre AS runtime
 
 WORKDIR /app
 
+# Copia apenas o JAR gerado
 COPY --from=builder /app/target/*jar /app/app.jar
 
 EXPOSE 8080
