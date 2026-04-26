@@ -20,7 +20,7 @@ public class Constants {
    public static final int APOSTA_ARTILHEIRO = 10;
    public static final int APOSTA_POSICAO_INCORRETA = 5;
    
-   public static final BigDecimal VALOR_APOSTA = new BigDecimal(75);
+   public static final BigDecimal VALOR_APOSTA = new BigDecimal(100);
    
    public static final BigDecimal PORC_PRIMEIRO = new BigDecimal(50);
    public static final BigDecimal PORC_SEGUNDO = new BigDecimal(20);
