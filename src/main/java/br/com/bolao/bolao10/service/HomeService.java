@@ -64,7 +64,8 @@ public class HomeService {
 
 		HomeAntesDadosIniciais dados = new HomeAntesDadosIniciais();
 
-		Integer qntdParticipantes = usuarioRepository.carregarParticipantes().size();
+		// Desconta 1 usuário de IA (não entra no cálculo do prêmio nem na contagem de jogadores)
+		Integer qntdParticipantes = usuarioRepository.carregarParticipantes().size() - 1;
 
 		BigDecimal valorTotal = new BigDecimal(qntdParticipantes).multiply(Constants.VALOR_APOSTA);
 		
