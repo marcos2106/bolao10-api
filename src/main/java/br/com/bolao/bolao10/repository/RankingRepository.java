@@ -49,11 +49,16 @@ public class RankingRepository extends GenericRepository {
 		}
 	}
 
+	/**
+	 * Carrega ranking com JOIN FETCH para otimizar performance.
+	 * Evita N+1 queries ao buscar Usuario junto com Ranking em uma única query.
+	 */
 	public List<Ranking> carregarRanking() {
 		
 		StringBuilder sql = new StringBuilder();
-		sql.append(" select r from Ranking r	");
-		sql.append(" order by r.pontuacao desc, r.usuario.nome ");
+		sql.append(" select r from Ranking r ");
+		sql.append(" join fetch r.usuario u ");  // JOIN FETCH otimizado
+		sql.append(" order by r.pontuacao desc, u.nome ");
 
 		TypedQuery<Ranking> query = em.createQuery(sql.toString(), Ranking.class);
 		try {

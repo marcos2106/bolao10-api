@@ -48,6 +48,15 @@ public class HomeRest extends BaseRest {
 		return createObjectReturn(homeService.carregarRanking());
 	}
 
+	/**
+	 * Endpoint OTIMIZADO: retorna ranking com badges em uma única requisição.
+	 * Performance muito melhor que chamar /durante/ranking + /badge/ranking separadamente.
+	 */
+	@GetMapping(value = "/durante/ranking-completo", produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody ResponseEntity<?> carregarRankingCompleto() {
+		return createObjectReturn(homeService.carregarRankingCompleto());
+	}
+
 	@GetMapping(value = "/durante/grupo", produces = MediaType.APPLICATION_JSON_VALUE)
 	public @ResponseBody ResponseEntity<?> carregarGrupos() {
 		return createObjectReturn(homeService.carregarGrupos());
