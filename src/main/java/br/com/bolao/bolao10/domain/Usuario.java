@@ -72,12 +72,10 @@ public class Usuario implements Serializable {
 	private NivelUsuarioEnum nivel;
 
 	@Column(name = "avatar", nullable = false, columnDefinition = "VARCHAR(100)")
-	pJsonIgnore  // Data/hora desnecessária no ranking
+	private String avatar;
+
 	@DateTimeFormat(pattern = "dd/MM HH:mm")
 	@Column(name = "datahoraaposta", nullable = true, columnDefinition = "DATETIME")
-	private LocalDateTime dataHoraAposta;
-	
-	@JsonIgnore  // Data/hora desnecessária no ranking@Column(name = "datahoraaposta", nullable = true, columnDefinition = "DATETIME")
 	private LocalDateTime dataHoraAposta;
 	
 	@DateTimeFormat(pattern = "dd/MM HH:mm")
