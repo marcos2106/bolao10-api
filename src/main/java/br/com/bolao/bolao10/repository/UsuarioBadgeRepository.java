@@ -76,6 +76,24 @@ public class UsuarioBadgeRepository extends GenericRepository {
 		return mapa;
 	}
 
+	/**
+	 * Verifica se existe algum badge criado HOJE (independente de usuário ou badge).
+	 * Usado para detectar se a scheduled já executou hoje e evitar processamento duplicado.
+	 */
+	public boolean existeBadgeHoje(java.time.LocalDateTime inicioHoje, java.time.LocalDateTime fimHoje) {
+		String sql = "select count(ub) from UsuarioBadge ub "
+				+ "where ub.dataConquista >= :inicio and ub.dataConquista < :fim";
+		try {
+			Long count = em.createQuery(sql, Long.class)
+					.setParameter("inicio", inicioHoje)
+					.setParameter("fim", fimHoje)
+					.getSingleResult();
+			return count != null && count > 0;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
 	/** Inativa todos os registros de usuario_badge para um badge específico */
 	@Transactional
 	public void inativarPorBadge(Long idBadge) {

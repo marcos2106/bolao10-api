@@ -32,7 +32,7 @@ public class PontuacaoDiariaScheduled {
 	 * Roda às 02h da madrugada (após todos os jogos do dia serem computados)
 	 */
 	//@Scheduled(cron = "0 0 2 * * *", zone = "America/Sao_Paulo")
-	@Scheduled(cron = "0 32 0 * * *", zone = "America/Sao_Paulo")
+	//@Scheduled(cron = "0 32 0 * * *", zone = "America/Sao_Paulo")
 	public void execute() {
 
 		// primeiro verifica a situação do bolão, se está DURANTE

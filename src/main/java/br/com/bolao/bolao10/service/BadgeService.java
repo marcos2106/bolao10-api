@@ -119,15 +119,27 @@ public class BadgeService {
 	 */
 	@Transactional
 	public void atualizarTodosBadges() {
-		LOGGER.info("Iniciando atualização de todos os Badges...");
-		try { aplicarBadgeMaiorCampeao(); } catch (Exception e) { LOGGER.error("Erro badge MaiorCampeao", e); }
-		try { aplicarBadgeLanterna(); }      catch (Exception e) { LOGGER.error("Erro badge Lanterna", e); }
-		try { aplicarBadgeBeteiro(); }       catch (Exception e) { LOGGER.error("Erro badge Beteiro", e); }
-		try { aplicarBadgeGatoPreto(); }     catch (Exception e) { LOGGER.error("Erro badge GatoPreto", e); }
-		try { aplicarBadgeFoguete(); }       catch (Exception e) { LOGGER.error("Erro badge Foguete", e); }
-		try { aplicarBadgeMeiaBoca(); }      catch (Exception e) { LOGGER.error("Erro badge MeiaBoca", e); }
-		try { aplicarBadgeEmpacado(); }      catch (Exception e) { LOGGER.error("Erro badge Empacado", e); }
-		try { aplicarBadgeGoleador(); }      catch (Exception e) { LOGGER.error("Erro badge Goleador", e); }
+		String executionId = java.util.UUID.randomUUID().toString().substring(0, 8);
+		LOGGER.info("[{}] Iniciando atualização de todos os Badges...", executionId);
+
+		// VERIFICAÇÃO GLOBAL: se já existe algum badge criado HOJE, aborta toda a execução
+		// Isso evita que múltiplas instâncias executem a scheduled duplicada
+		LocalDateTime inicioHoje = LocalDateTime.now().toLocalDate().atStartOfDay();
+		LocalDateTime fimHoje = inicioHoje.plusDays(1);
+		
+		if (usuarioBadgeRepository.existeBadgeHoje(inicioHoje, fimHoje)) {
+			LOGGER.info("[{}] Badges já foram atualizados HOJE - abortando execução duplicada", executionId);
+			return;
+		}
+
+		try { aplicarBadgeMaiorCampeao(); } catch (Exception e) { LOGGER.error("[{}] Erro badge MaiorCampeao", executionId, e); }
+		try { aplicarBadgeLanterna(); }      catch (Exception e) { LOGGER.error("[{}] Erro badge Lanterna", executionId, e); }
+		try { aplicarBadgeBeteiro(); }       catch (Exception e) { LOGGER.error("[{}] Erro badge Beteiro", executionId, e); }
+		try { aplicarBadgeGatoPreto(); }     catch (Exception e) { LOGGER.error("[{}] Erro badge GatoPreto", executionId, e); }
+		try { aplicarBadgeFoguete(); }       catch (Exception e) { LOGGER.error("[{}] Erro badge Foguete", executionId, e); }
+		try { aplicarBadgeMeiaBoca(); }      catch (Exception e) { LOGGER.error("[{}] Erro badge MeiaBoca", executionId, e); }
+		try { aplicarBadgeEmpacado(); }      catch (Exception e) { LOGGER.error("[{}] Erro badge Empacado", executionId, e); }
+		try { aplicarBadgeGoleador(); }      catch (Exception e) { LOGGER.error("[{}] Erro badge Goleador", executionId, e); }
 
 		// Atualizar nível de todos os usuários com base na pontuação atual do Ranking
 		try {
@@ -137,9 +149,9 @@ public class BadgeService {
 					userService.atualizarNivel(r.getUsuario().getId(), r.getPontuacao());
 				}
 			}
-		} catch (Exception e) { LOGGER.error("Erro ao atualizar níveis", e); }
+		} catch (Exception e) { LOGGER.error("[{}] Erro ao atualizar níveis", executionId, e); }
 
-		LOGGER.info("Atualização de Badges concluída.");
+		LOGGER.info("[{}] Atualização de Badges concluída.", executionId);
 	}
 
 	// ─────────────────────────────────────────────
@@ -271,19 +283,26 @@ public class BadgeService {
 	/**
 	 * Helper: inativa badge do dono anterior e atribui ao novo dono.
 	 * Badges dinâmicos têm exatamente 1 dono ativo por vez.
+	 * 
+	 * Cada dia é uma nova conquista - o usuário pode ganhar o mesmo badge todos os dias
+	 * que atender ao critério (ex: líder 3 dias seguidos = 3 selos no histórico).
+	 * 
+	 * Nota: A verificação de duplicação (se já rodou hoje) é feita no método atualizarTodosBadges(),
+	 * então este método pode ser chamado diretamente sem preocupação com duplicação.
 	 */
 	@Transactional
 	private void atribuirBadge(Long idBadge, Long idUsuario) {
 		if (idUsuario == null) return;
 		Badge badge = badgeRepository.findById(idBadge);
 		if (badge == null) return;
+		Usuario usuario = userRepository.findById(idUsuario);
+		if (usuario == null) return;
 
-		// Inativa o dono anterior
+		// Inativa o dono anterior (pode ser outro usuário ou o mesmo usuário)
 		usuarioBadgeRepository.inativarPorBadge(idBadge);
 
-		// Cria o novo registro
+		// Cria o novo registro (nova conquista no histórico)
 		UsuarioBadge ub = new UsuarioBadge();
-		Usuario usuario = userRepository.findById(idUsuario);
 		ub.setUsuario(usuario);
 		ub.setBadge(badge);
 		ub.setDataConquista(LocalDateTime.now());
