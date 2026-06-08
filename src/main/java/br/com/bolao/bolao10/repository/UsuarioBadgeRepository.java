@@ -57,10 +57,14 @@ public class UsuarioBadgeRepository extends GenericRepository {
 	/**
 	 * Carrega um mapa idUsuario → lista de badges ativos.
 	 * Usado para carregar os badges de todo o ranking em uma única query.
+	 * OTIMIZADO com JOIN FETCH para evitar N+1 queries.
 	 */
 	public Map<Long, List<Badge>> carregarMapaBadgesAtivos() {
 		Map<Long, List<Badge>> mapa = new HashMap<>();
-		String sql = "select ub from UsuarioBadge ub where ub.atual = true or ub.atual = '1'";
+		String sql = "select ub from UsuarioBadge ub "
+				+ "join fetch ub.usuario u "
+				+ "join fetch ub.badge b "
+				+ "where ub.atual = true or ub.atual = '1'";
 		try {
 			List<UsuarioBadge> lista = em.createQuery(sql, UsuarioBadge.class).getResultList();
 			for (UsuarioBadge ub : lista) {

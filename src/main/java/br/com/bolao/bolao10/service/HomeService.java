@@ -23,6 +23,7 @@ import br.com.bolao.bolao10.model.ClassificacaoGrupo;
 import br.com.bolao.bolao10.model.HomeAntesDadosIniciais;
 import br.com.bolao.bolao10.model.HomeDepoisCuriosidade;
 import br.com.bolao.bolao10.model.HomeDuranteProximasPartidas;
+import br.com.bolao.bolao10.model.RankingComBadges;
 import br.com.bolao.bolao10.model.UltimosUsuarios;
 import br.com.bolao.bolao10.repository.ApostaRepository;
 import br.com.bolao.bolao10.repository.ClassificacaoRepository;
@@ -149,16 +150,16 @@ public class HomeService {
 	 * Carrega ranking JÁ com badges em uma única operação.
 	 * Performance otimizada: evita 2 requests HTTP separadas.
 	 */
-	public List<br.com.bolao.bolao10.model.RankingComBadges> carregarRankingCompleto() {
+	public List<RankingComBadges> carregarRankingCompleto() {
 		List<Ranking> ranking = rankingRepository.carregarRanking();
 		java.util.Map<Long, List<Badge>> badgesMap = badgeService.carregarMapaBadgesAtivos();
 		
-		List<br.com.bolao.bolao10.model.RankingComBadges> resultado = new java.util.ArrayList<>();
+		List<RankingComBadges> resultado = new java.util.ArrayList<>();
 		for (Ranking r : ranking) {
 			Long idUsuario = r.getUsuario().getId();
 			List<Badge> badges = badgesMap.getOrDefault(idUsuario, new java.util.ArrayList<>());
 			
-			br.com.bolao.bolao10.model.RankingComBadges item = new br.com.bolao.bolao10.model.RankingComBadges(
+			RankingComBadges item = new RankingComBadges(
 				r.getUsuario(),
 				r.getPontuacao(),
 				r.getPontuacaoProvisoria(),
