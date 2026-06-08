@@ -1,6 +1,10 @@
 
 package br.com.bolao.bolao10.rest;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.bolao.bolao10.model.RankingComBadges;
 import br.com.bolao.bolao10.service.HomeService;
 
 @RestController
@@ -77,11 +82,11 @@ public class HomeRest extends BaseRest {
 	@GetMapping(value = "/durante/ranking-completo-teste", produces = MediaType.APPLICATION_JSON_VALUE)
 	public @ResponseBody ResponseEntity<?> carregarRankingCompletoTeste() {
 		long inicio = System.currentTimeMillis();
-		List<br.com.bolao.bolao10.model.RankingComBadges> resultado = homeService.carregarRankingCompleto();
+		List<RankingComBadges> resultado = homeService.carregarRankingCompleto();
 		long fim = System.currentTimeMillis();
 		
 		// Retorna apenas contagem - SEM serializar objetos complexos
-		java.util.Map<String, Object> teste = new java.util.HashMap<>();
+		Map<String, Object> teste = new HashMap<>();
 		teste.put("quantidade", resultado.size());
 		teste.put("tempoMs", (fim-inicio));
 		teste.put("mensagem", "Se este endpoint for rápido, o problema é a serialização JSON");
