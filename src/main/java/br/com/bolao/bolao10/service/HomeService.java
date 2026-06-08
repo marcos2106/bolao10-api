@@ -150,8 +150,9 @@ public class HomeService {
 
 	/**
 	 * Carrega ranking JÁ com badges em uma única operação.
-	 * Performance SUPER otimizada: query SQL nativa que traz tudo de uma vez.
+	 * @Transactional CRÍTICO: mantém sessão Hibernate aberta para evitar N+1 queries.
 	 */
+	@Transactional(readOnly = true)
 	public List<RankingComBadges> carregarRankingCompleto() {
 		long inicio = System.currentTimeMillis();
 		

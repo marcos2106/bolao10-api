@@ -1,10 +1,6 @@
 
 package br.com.bolao.bolao10.rest;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.bolao.bolao10.model.RankingComBadges;
 import br.com.bolao.bolao10.service.HomeService;
 
 @RestController
@@ -74,25 +69,6 @@ public class HomeRest extends BaseRest {
 		System.out.println(">>> [REST] TOTAL endpoint: " + (fim-inicio) + "ms");
 		
 		return response;
-	}
-
-	/**
-	 * ENDPOINT DE TESTE: retorna apenas quantidade para verificar se problema é serialização
-	 */
-	@GetMapping(value = "/durante/ranking-completo-teste", produces = MediaType.APPLICATION_JSON_VALUE)
-	public @ResponseBody ResponseEntity<?> carregarRankingCompletoTeste() {
-		long inicio = System.currentTimeMillis();
-		List<RankingComBadges> resultado = homeService.carregarRankingCompleto();
-		long fim = System.currentTimeMillis();
-		
-		// Retorna apenas contagem - SEM serializar objetos complexos
-		Map<String, Object> teste = new HashMap<>();
-		teste.put("quantidade", resultado.size());
-		teste.put("tempoMs", (fim-inicio));
-		teste.put("mensagem", "Se este endpoint for rápido, o problema é a serialização JSON");
-		
-		System.out.println(">>> [TESTE] Endpoint teste levou: " + (fim-inicio) + "ms");
-		return createObjectReturn(teste);
 	}
 
 	@GetMapping(value = "/durante/grupo", produces = MediaType.APPLICATION_JSON_VALUE)
