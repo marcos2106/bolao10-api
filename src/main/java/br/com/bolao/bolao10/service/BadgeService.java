@@ -114,6 +114,17 @@ public class BadgeService {
 	}
 
 	/**
+	 * Carrega badges SOMENTE de usuários específicos (ainda mais otimizado).
+	 * Usado quando já sabemos a lista de IDs dos usuários.
+	 */
+	public Map<Long, List<Badge>> carregarMapaBadgesDeUsuarios(List<Long> idsUsuarios) {
+		if (idsUsuarios == null || idsUsuarios.isEmpty()) {
+			return new java.util.HashMap<>();
+		}
+		return usuarioBadgeRepository.carregarMapaBadgesDeUsuarios(idsUsuarios);
+	}
+
+	/**
 	 * Ponto de entrada principal — atualiza todos os 8 badges.
 	 * Chamado pelo Scheduled job de madrugada.
 	 */

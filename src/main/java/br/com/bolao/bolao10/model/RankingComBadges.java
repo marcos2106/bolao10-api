@@ -2,15 +2,14 @@ package br.com.bolao.bolao10.model;
 
 import java.util.List;
 import br.com.bolao.bolao10.domain.Badge;
-import br.com.bolao.bolao10.domain.Usuario;
 
 /**
  * DTO otimizado para exibir ranking com badges.
- * Reduz de 2 requests HTTP para 1, melhorando performance.
+ * Usa UsuarioDTO leve ao invés de entidade completa para evitar problemas de serialização.
  */
 public class RankingComBadges {
 	
-	private Usuario usuario;
+	private UsuarioDTO usuario;
 	private Integer pontuacao;
 	private Integer pontuacaoProvisoria;
 	private Integer posicaoAnterior;
@@ -18,7 +17,7 @@ public class RankingComBadges {
 	
 	public RankingComBadges() {}
 	
-	public RankingComBadges(Usuario usuario, Integer pontuacao, Integer pontuacaoProvisoria, 
+	public RankingComBadges(UsuarioDTO usuario, Integer pontuacao, Integer pontuacaoProvisoria, 
 	                        Integer posicaoAnterior, List<Badge> badges) {
 		this.usuario = usuario;
 		this.pontuacao = pontuacao;
@@ -27,11 +26,11 @@ public class RankingComBadges {
 		this.badges = badges;
 	}
 
-	public Usuario getUsuario() {
+	public UsuarioDTO getUsuario() {
 		return usuario;
 	}
 
-	public void setUsuario(Usuario usuario) {
+	public void setUsuario(UsuarioDTO usuario) {
 		this.usuario = usuario;
 	}
 

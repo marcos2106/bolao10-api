@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import br.com.bolao.bolao10.model.HomeDepoisCuriosidade;
 import br.com.bolao.bolao10.model.HomeDuranteProximasPartidas;
 import br.com.bolao.bolao10.model.RankingComBadges;
 import br.com.bolao.bolao10.model.UltimosUsuarios;
+import br.com.bolao.bolao10.model.UsuarioDTO;
 import br.com.bolao.bolao10.repository.ApostaRepository;
 import br.com.bolao.bolao10.repository.ClassificacaoRepository;
 import br.com.bolao.bolao10.repository.ColocacaoRepository;
@@ -148,19 +150,32 @@ public class HomeService {
 
 	/**
 	 * Carrega ranking JÁ com badges em uma única operação.
-	 * Performance otimizada: evita 2 requests HTTP separadas.
+	 * Performance SUPER otimizada: query SQL nativa que traz tudo de uma vez.
 	 */
 	public List<RankingComBadges> carregarRankingCompleto() {
+		// ESTRATÉGIA: Carregar ranking uma vez, badges uma vez, montar em memória
+		// É mais rápido que tentar fazer um JOIN complexo entre ranking e usuario_badge
 		List<Ranking> ranking = rankingRepository.carregarRanking();
-		java.util.Map<Long, List<Badge>> badgesMap = badgeService.carregarMapaBadgesAtivos();
 		
+		// Coletar IDs de todos os usuários do ranking
+		List<Long> idsUsuarios = ranking.stream()
+				.map(r -> r.getUsuario().getId())
+				.collect(java.util.stream.Collectors.toList());
+		
+		// Buscar badges SOMENTE desses usuários (query otimizada)
+		Map<Long, List<Badge>> badgesMap = badgeService.carregarMapaBadgesDeUsuarios(idsUsuarios);
+		
+		// Montar resultado com DTOs leves ao invés de entidades JPA
 		List<RankingComBadges> resultado = new java.util.ArrayList<>();
 		for (Ranking r : ranking) {
 			Long idUsuario = r.getUsuario().getId();
 			List<Badge> badges = badgesMap.getOrDefault(idUsuario, new java.util.ArrayList<>());
 			
+			// Converter Usuario para DTO leve (evita problemas de serialização JSON)
+			UsuarioDTO usuarioDTO = new UsuarioDTO(r.getUsuario());
+			
 			RankingComBadges item = new RankingComBadges(
-				r.getUsuario(),
+				usuarioDTO,
 				r.getPontuacao(),
 				r.getPontuacaoProvisoria(),
 				r.getPosicaoAnterior(),

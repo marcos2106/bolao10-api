@@ -81,6 +81,37 @@ public class UsuarioBadgeRepository extends GenericRepository {
 	}
 
 	/**
+	 * Carrega badges SOMENTE de usuários específicos (ainda mais otimizado).
+	 * Busca apenas os badges dos IDs fornecidos.
+	 */
+	public Map<Long, List<Badge>> carregarMapaBadgesDeUsuarios(List<Long> idsUsuarios) {
+		Map<Long, List<Badge>> mapa = new HashMap<>();
+		if (idsUsuarios == null || idsUsuarios.isEmpty()) {
+			return mapa;
+		}
+		
+		String sql = "select ub from UsuarioBadge ub "
+				+ "join fetch ub.usuario u "
+				+ "join fetch ub.badge b "
+				+ "where (ub.atual = true or ub.atual = '1') "
+				+ "and u.id in :ids";
+		try {
+			List<UsuarioBadge> lista = em.createQuery(sql, UsuarioBadge.class)
+					.setParameter("ids", idsUsuarios)
+					.getResultList();
+			for (UsuarioBadge ub : lista) {
+				if (Boolean.TRUE.equals(ub.getAtual())) {
+					Long idUsuario = ub.getUsuario().getId();
+					mapa.computeIfAbsent(idUsuario, k -> new ArrayList<>()).add(ub.getBadge());
+				}
+			}
+		} catch (Exception e) {
+			// retorna mapa vazio em caso de erro
+		}
+		return mapa;
+	}
+
+	/**
 	 * Verifica se existe algum badge criado HOJE (independente de usuário ou badge).
 	 * Usado para detectar se a scheduled já executou hoje e evitar processamento duplicado.
 	 */
