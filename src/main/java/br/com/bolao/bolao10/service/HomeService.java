@@ -153,19 +153,30 @@ public class HomeService {
 	 * Performance SUPER otimizada: query SQL nativa que traz tudo de uma vez.
 	 */
 	public List<RankingComBadges> carregarRankingCompleto() {
+		long inicio = System.currentTimeMillis();
+		
 		// ESTRATÉGIA: Carregar ranking uma vez, badges uma vez, montar em memória
 		// É mais rápido que tentar fazer um JOIN complexo entre ranking e usuario_badge
+		System.out.println(">>> [PERFORMANCE] Iniciando carregarRankingCompleto...");
+		
+		long t1 = System.currentTimeMillis();
 		List<Ranking> ranking = rankingRepository.carregarRanking();
+		long t2 = System.currentTimeMillis();
+		System.out.println(">>> [PERFORMANCE] carregarRanking() levou: " + (t2-t1) + "ms - " + ranking.size() + " registros");
 		
 		// Coletar IDs de todos os usuários do ranking
 		List<Long> idsUsuarios = ranking.stream()
 				.map(r -> r.getUsuario().getId())
 				.collect(java.util.stream.Collectors.toList());
 		
+		long t3 = System.currentTimeMillis();
 		// Buscar badges SOMENTE desses usuários (query otimizada)
 		Map<Long, List<Badge>> badgesMap = badgeService.carregarMapaBadgesDeUsuarios(idsUsuarios);
+		long t4 = System.currentTimeMillis();
+		System.out.println(">>> [PERFORMANCE] carregarMapaBadgesDeUsuarios() levou: " + (t4-t3) + "ms");
 		
 		// Montar resultado com DTOs leves ao invés de entidades JPA
+		long t5 = System.currentTimeMillis();
 		List<RankingComBadges> resultado = new java.util.ArrayList<>();
 		for (Ranking r : ranking) {
 			Long idUsuario = r.getUsuario().getId();
@@ -183,6 +194,12 @@ public class HomeService {
 			);
 			resultado.add(item);
 		}
+		long t6 = System.currentTimeMillis();
+		System.out.println(">>> [PERFORMANCE] Montar DTOs levou: " + (t6-t5) + "ms");
+		
+		long fim = System.currentTimeMillis();
+		System.out.println(">>> [PERFORMANCE] TOTAL carregarRankingCompleto(): " + (fim-inicio) + "ms");
+		
 		return resultado;
 	}
 

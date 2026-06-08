@@ -54,7 +54,40 @@ public class HomeRest extends BaseRest {
 	 */
 	@GetMapping(value = "/durante/ranking-completo", produces = MediaType.APPLICATION_JSON_VALUE)
 	public @ResponseBody ResponseEntity<?> carregarRankingCompleto() {
-		return createObjectReturn(homeService.carregarRankingCompleto());
+		long inicio = System.currentTimeMillis();
+		System.out.println(">>> [REST] Iniciando /durante/ranking-completo...");
+		
+		Object resultado = homeService.carregarRankingCompleto();
+		
+		long meio = System.currentTimeMillis();
+		System.out.println(">>> [REST] Service levou: " + (meio-inicio) + "ms");
+		
+		ResponseEntity<?> response = createObjectReturn(resultado);
+		
+		long fim = System.currentTimeMillis();
+		System.out.println(">>> [REST] createObjectReturn/serialização levou: " + (fim-meio) + "ms");
+		System.out.println(">>> [REST] TOTAL endpoint: " + (fim-inicio) + "ms");
+		
+		return response;
+	}
+
+	/**
+	 * ENDPOINT DE TESTE: retorna apenas quantidade para verificar se problema é serialização
+	 */
+	@GetMapping(value = "/durante/ranking-completo-teste", produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody ResponseEntity<?> carregarRankingCompletoTeste() {
+		long inicio = System.currentTimeMillis();
+		List<br.com.bolao.bolao10.model.RankingComBadges> resultado = homeService.carregarRankingCompleto();
+		long fim = System.currentTimeMillis();
+		
+		// Retorna apenas contagem - SEM serializar objetos complexos
+		java.util.Map<String, Object> teste = new java.util.HashMap<>();
+		teste.put("quantidade", resultado.size());
+		teste.put("tempoMs", (fim-inicio));
+		teste.put("mensagem", "Se este endpoint for rápido, o problema é a serialização JSON");
+		
+		System.out.println(">>> [TESTE] Endpoint teste levou: " + (fim-inicio) + "ms");
+		return createObjectReturn(teste);
 	}
 
 	@GetMapping(value = "/durante/grupo", produces = MediaType.APPLICATION_JSON_VALUE)

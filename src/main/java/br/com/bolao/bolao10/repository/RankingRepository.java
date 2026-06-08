@@ -54,6 +54,7 @@ public class RankingRepository extends GenericRepository {
 	 * Evita N+1 queries ao buscar Usuario junto com Ranking em uma única query.
 	 */
 	public List<Ranking> carregarRanking() {
+		long inicio = System.currentTimeMillis();
 		
 		StringBuilder sql = new StringBuilder();
 		sql.append(" select r from Ranking r ");
@@ -61,10 +62,20 @@ public class RankingRepository extends GenericRepository {
 		sql.append(" order by r.pontuacao desc, u.nome ");
 
 		TypedQuery<Ranking> query = em.createQuery(sql.toString(), Ranking.class);
+		
+		long t1 = System.currentTimeMillis();
+		System.out.println(">>> [REPOSITORY] Query preparada em: " + (t1-inicio) + "ms");
+		
 		try {
-			return query.getResultList();
+			List<Ranking> resultado = query.getResultList();
+			long fim = System.currentTimeMillis();
+			System.out.println(">>> [REPOSITORY] Query executada em: " + (fim-t1) + "ms - Retornou " + resultado.size() + " registros");
+			System.out.println(">>> [REPOSITORY] TOTAL carregarRanking(): " + (fim-inicio) + "ms");
+			return resultado;
 		}
 		catch (Exception e) {
+			long fim = System.currentTimeMillis();
+			System.out.println(">>> [REPOSITORY] Query FALHOU em: " + (fim-inicio) + "ms");
 			return null;
 		}
 	}

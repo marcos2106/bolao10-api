@@ -17,6 +17,8 @@ import javax.persistence.Transient;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import br.com.bolao.bolao10.domain.enums.NivelUsuarioEnum;
 import br.com.bolao.bolao10.domain.enums.UserProfile;
 import br.com.bolao.bolao10.support.Strings;
@@ -41,9 +43,11 @@ public class Usuario implements Serializable {
 	@Column(name = "telefone", nullable = true, columnDefinition = "VARCHAR(11)")
 	private String telefone;
 
+	@JsonIgnore  // NÃO serializar email (privacidade)
 	@Column(name = "email", nullable = false, columnDefinition = "VARCHAR(100)")
 	private String email;
 
+	@JsonIgnore  // CRÍTICO: NÃO serializar senha!
 	@Column(name = "senha", nullable = false, columnDefinition = "VARCHAR(8)")
 	private String senha;
 
@@ -68,10 +72,12 @@ public class Usuario implements Serializable {
 	private NivelUsuarioEnum nivel;
 
 	@Column(name = "avatar", nullable = false, columnDefinition = "VARCHAR(100)")
-	private String avatar;
-
+	pJsonIgnore  // Data/hora desnecessária no ranking
 	@DateTimeFormat(pattern = "dd/MM HH:mm")
 	@Column(name = "datahoraaposta", nullable = true, columnDefinition = "DATETIME")
+	private LocalDateTime dataHoraAposta;
+	
+	@JsonIgnore  // Data/hora desnecessária no ranking@Column(name = "datahoraaposta", nullable = true, columnDefinition = "DATETIME")
 	private LocalDateTime dataHoraAposta;
 	
 	@DateTimeFormat(pattern = "dd/MM HH:mm")
