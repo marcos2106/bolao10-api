@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.hibernate.Hibernate;
+
 import br.com.bolao.bolao10.domain.Classificacao;
 import br.com.bolao.bolao10.domain.Colocacao;
 import br.com.bolao.bolao10.domain.Partida;
@@ -165,7 +167,15 @@ public class HomeService {
 		long t2 = System.currentTimeMillis();
 		System.out.println(">>> [PERFORMANCE] carregarRanking() levou: " + (t2-t1) + "ms - " + ranking.size() + " registros");
 		
-		// Coletar IDs de todos os usuários do ranking
+		// FORÇAR inicialização dos usuários AGORA (dentro da transação)
+		long t2a = System.currentTimeMillis();
+		for (Ranking r : ranking) {
+			Hibernate.initialize(r.getUsuario());
+		}
+		long t2b = System.currentTimeMillis();
+		System.out.println(">>> [PERFORMANCE] Hibernate.initialize() levou: " + (t2b-t2a) + "ms");
+		
+		// Coletar IDs de todos os usuários do ranking (agora já inicializados!)
 		List<Long> idsUsuarios = ranking.stream()
 				.map(r -> r.getUsuario().getId())
 				.collect(java.util.stream.Collectors.toList());
