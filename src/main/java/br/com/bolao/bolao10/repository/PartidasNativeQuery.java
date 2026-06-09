@@ -59,11 +59,11 @@ public class PartidasNativeQuery {
 			"SELECT " +
 			"  p.idpartida, p.placarA, p.placarB, p.datahora, p.fase, p.rodada, " +
 			"  p.iniciada, p.finalizada, " +
-			"  sa.idselecao as idselecao_a, sa.nome as nome_a, sa.imagem as imagem_a, sa.grupo as grupo_a, " +
-			"  sb.idselecao as idselecao_b, sb.nome as nome_b, sb.imagem as imagem_b, sb.grupo as grupo_b " +
+			"  sa.idselecao_a as idselecao_a, sa.nome as nome_a, sa.imagem as imagem_a, sa.grupo as grupo_a, " +
+			"  sb.idselecao_b as idselecao_b, sb.nome as nome_b, sb.imagem as imagem_b, sb.grupo as grupo_b " +
 			"FROM partida p " +
-			"INNER JOIN selecao sa ON p.idselecaoA = sa.idselecao " +
-			"INNER JOIN selecao sb ON p.idselecaoB = sb.idselecao " +
+			"INNER JOIN selecao sa ON p.idselecaoA = sa.idselecao_a " +
+			"INNER JOIN selecao sb ON p.idselecaoB = sb.idselecao_b " +
 			"ORDER BY p.fase, p.rodada, p.datahora, p.idpartida";
 
 		Query query = em.createNativeQuery(sql);
@@ -148,11 +148,11 @@ public class PartidasNativeQuery {
 			"SELECT " +
 			"  p.idpartida, p.placarA, p.placarB, p.datahora, p.fase, p.rodada, " +
 			"  p.iniciada, p.finalizada, " +
-			"  sa.idselecao as idselecao_a, sa.nome as nome_a, sa.imagem as imagem_a, sa.grupo as grupo_a, sa.cor as cor_a, " +
-			"  sb.idselecao as idselecao_b, sb.nome as nome_b, sb.imagem as imagem_b, sb.grupo as grupo_b, sb.cor as cor_b " +
+			"  sa.idselecao_a as idselecao_a, sa.nome as nome_a, sa.imagem as imagem_a, sa.grupo as grupo_a, sa.cor as cor_a, " +
+			"  sb.idselecao_b as idselecao_b, sb.nome as nome_b, sb.imagem as imagem_b, sb.grupo as grupo_b, sb.cor as cor_b " +
 			"FROM partida p " +
-			"INNER JOIN selecao sa ON p.idselecaoA = sa.idselecao " +
-			"INNER JOIN selecao sb ON p.idselecaoB = sb.idselecao " +
+			"INNER JOIN selecao sa ON p.idselecaoA = sa.idselecao_a " +
+			"INNER JOIN selecao sb ON p.idselecaoB = sb.idselecao_b " +
 			"WHERE p.finalizada = 0 " +
 			"ORDER BY p.datahora " +
 			"LIMIT 3";
