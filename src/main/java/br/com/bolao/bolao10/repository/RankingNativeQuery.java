@@ -25,6 +25,31 @@ public class RankingNativeQuery {
 	private EntityManager em;
 
 	/**
+	 * Converte valor do banco (pode ser Boolean, Number, Character) para Boolean.
+	 * MySQL retorna BIT/TINYINT(1) como diferentes tipos dependendo do driver.
+	 */
+	private Boolean toBoolean(Object value) {
+		if (value == null) {
+			return false;
+		}
+		if (value instanceof Boolean) {
+			return (Boolean) value;
+		}
+		if (value instanceof Number) {
+			return ((Number) value).intValue() != 0;
+		}
+		if (value instanceof Character) {
+			char c = (Character) value;
+			return c == '1' || c == 'Y' || c == 'y' || c == 'T' || c == 't';
+		}
+		if (value instanceof String) {
+			String s = (String) value;
+			return "1".equals(s) || "Y".equalsIgnoreCase(s) || "T".equalsIgnoreCase(s) || "true".equalsIgnoreCase(s);
+		}
+		return false;
+	}
+
+	/**
 	 * Carrega ranking com usuários em UMA query SQL nativa.
 	 * Não usa JPA/Hibernate para evitar N+1 queries.
 	 */
@@ -65,9 +90,10 @@ public class RankingNativeQuery {
 				usuario.setNivel(NivelUsuarioEnum.valueOf(nivelStr));
 			}
 			
-			usuario.setAposta((Boolean) row[7]);
-			usuario.setAtivo((Boolean) row[8]);
-			usuario.setPagamento((Boolean) row[9]);
+			// Converter valores booleanos (MySQL pode retornar Character, Number ou Boolean)
+			usuario.setAposta(toBoolean(row[7]));
+			usuario.setAtivo(toBoolean(row[8]));
+			usuario.setPagamento(toBoolean(row[9]));
 			
 			// Converter String do banco para enum UserProfile
 			String perfilStr = (String) row[10];
@@ -75,7 +101,7 @@ public class RankingNativeQuery {
 				usuario.setPerfil(UserProfile.valueOf(perfilStr));
 			}
 			
-			usuario.setPrimeiro((Boolean) row[11]);
+			usuario.setPrimeiro(toBoolean(row[11]));
 			
 			// Criar Ranking
 			Ranking ranking = new Ranking();
