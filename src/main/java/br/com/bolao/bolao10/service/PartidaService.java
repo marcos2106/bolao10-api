@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.com.bolao.bolao10.domain.Partida;
 import br.com.bolao.bolao10.repository.PartidaRepository;
+import br.com.bolao.bolao10.repository.PartidasNativeQuery;
 
 @Service
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -18,9 +19,29 @@ public class PartidaService {
 	@Autowired
 	private PartidaRepository partidaRepository;
 	
+	@Autowired
+	private PartidasNativeQuery partidasNativeQuery;
+	
 	@Transactional
 	public List<Partida> carregarPartidas() {
 		return partidaRepository.carregarPartidasTabela();
+	}
+	
+	/**
+	 * Carrega partidas com seleções usando SQL NATIVO (bypassa Hibernate para evitar N+1).
+	 * OTIMIZADO: 1 query ao invés de 312 queries!
+	 */
+	@Transactional(readOnly = true)
+	public List<Partida> carregarPartidasOtimizado() {
+		long inicio = System.currentTimeMillis();
+		System.out.println(">>> [PERFORMANCE PARTIDAS] Iniciando carregarPartidasOtimizado...");
+		
+		List<Partida> partidas = partidasNativeQuery.carregarPartidasComSelecoes();
+		
+		long fim = System.currentTimeMillis();
+		System.out.println(">>> [PERFORMANCE PARTIDAS] TOTAL carregarPartidasOtimizado(): " + (fim-inicio) + "ms");
+		
+		return partidas;
 	}
 	
 }

@@ -36,6 +36,7 @@ import br.com.bolao.bolao10.model.RankingUsuario;
 import br.com.bolao.bolao10.repository.ApostaColocacaoRepository;
 import br.com.bolao.bolao10.repository.ApostaRepository;
 import br.com.bolao.bolao10.repository.PartidaRepository;
+import br.com.bolao.bolao10.repository.PontuacaoNativeQuery;
 import br.com.bolao.bolao10.repository.RankingCustomizadoRepository;
 import br.com.bolao.bolao10.repository.RankingHistoricoRepository;
 import br.com.bolao.bolao10.repository.RankingRepository;
@@ -76,6 +77,9 @@ public class BolaoService {
 
 	@Autowired
 	private RankingCustomizadoRepository rcRepository;
+	
+	@Autowired
+	private PontuacaoNativeQuery pontuacaoNativeQuery;
 
 	@Transactional
 	public List<Ranking> carregarRanking() {
@@ -431,6 +435,42 @@ public class BolaoService {
 			}
 		}
 		return listaPontuacao;
+	}
+	
+	/**
+	 * Carrega pontuação completa usando SQL NATIVO (bypassa Hibernate para evitar N+1).
+	 * OTIMIZADO: 4 queries ao invés de dezenas de milhares!
+	 */
+	@Transactional(readOnly = true)
+	public List<PontuacaoUsuarioPartida> carregarPontuacaoPartidasOtimizado() {
+		long inicio = System.currentTimeMillis();
+		System.out.println(">>> [PERFORMANCE] Iniciando carregarPontuacaoPartidasOtimizado...");
+		
+		Situacao situacao = configuracaoService.situacaoAtiva();
+		
+		if (situacao.getId().intValue() == Constants.SITUACAO_ANTES) {
+			// Antes do início: retornar usuários sem apostas
+			List<PontuacaoUsuarioPartida> listaPontuacao = new ArrayList<>();
+			List<Usuario> listaUsuario = userRepository.carregarParticipantes();
+			
+			for (Usuario usuario : listaUsuario) {
+				PontuacaoUsuarioPartida pup = new PontuacaoUsuarioPartida();
+				pup.setUsuario(usuario);
+				pup.setPontuacao(0L);
+				listaPontuacao.add(pup);
+			}
+			
+			System.out.println(">>> [PERFORMANCE] Situação ANTES - retornou " + listaPontuacao.size() + " usuários");
+			return listaPontuacao;
+		}
+		
+		// Durante ou depois: usar query nativa otimizada
+		List<PontuacaoUsuarioPartida> resultado = pontuacaoNativeQuery.carregarPontuacaoCompleta();
+		
+		long fim = System.currentTimeMillis();
+		System.out.println(">>> [PERFORMANCE] TOTAL carregarPontuacaoPartidasOtimizado(): " + (fim-inicio) + "ms");
+		
+		return resultado;
 	}
 
 	public List<RankingUsuario> carregarRankingAtivo() {

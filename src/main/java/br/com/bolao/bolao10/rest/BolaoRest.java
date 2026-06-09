@@ -96,6 +96,31 @@ public class BolaoRest extends BaseRest {
 	public @ResponseBody ResponseEntity<?> carregarPontuacaoPartidas() {
 		return createObjectReturn(bolaoService.carregarPontuacaoPartidas());
 	}
+	
+	/**
+	 * Endpoint OTIMIZADO para carregar pontuação completa.
+	 * USA SQL NATIVO: 4 queries ao invés de dezenas de milhares!
+	 */
+	@GetMapping(value = "/pontuacao/otimizado", produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody ResponseEntity<?> carregarPontuacaoPartidasOtimizado() {
+		long inicio = System.currentTimeMillis();
+		System.out.println(">>> [REST PONTUACAO] Iniciando /bolao/pontuacao/otimizado...");
+		
+		long t1 = System.currentTimeMillis();
+		Object result = bolaoService.carregarPontuacaoPartidasOtimizado();
+		long t2 = System.currentTimeMillis();
+		System.out.println(">>> [REST PONTUACAO] Service levou: " + (t2-t1) + "ms");
+		
+		long t3 = System.currentTimeMillis();
+		ResponseEntity<?> response = createObjectReturn(result);
+		long t4 = System.currentTimeMillis();
+		System.out.println(">>> [REST PONTUACAO] createObjectReturn/serialização levou: " + (t4-t3) + "ms");
+		
+		long fim = System.currentTimeMillis();
+		System.out.println(">>> [REST PONTUACAO] TOTAL endpoint: " + (fim-inicio) + "ms");
+		
+		return response;
+	}
 
 	@GetMapping(value = "/ranking/usuario", produces = MediaType.APPLICATION_JSON_VALUE)
 	public @ResponseBody ResponseEntity<?> carregarRankingAtivo() {
