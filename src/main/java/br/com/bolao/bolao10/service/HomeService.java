@@ -14,8 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.hibernate.Hibernate;
-
 import br.com.bolao.bolao10.domain.Classificacao;
 import br.com.bolao.bolao10.domain.Colocacao;
 import br.com.bolao.bolao10.domain.Partida;
@@ -34,6 +32,7 @@ import br.com.bolao.bolao10.repository.ClassificacaoRepository;
 import br.com.bolao.bolao10.repository.ColocacaoRepository;
 import br.com.bolao.bolao10.repository.PartidaRepository;
 import br.com.bolao.bolao10.repository.RankingRepository;
+import br.com.bolao.bolao10.repository.RankingNativeQuery;
 import br.com.bolao.bolao10.repository.UserRepository;
 import br.com.bolao.bolao10.support.Constants;
 import br.com.bolao.bolao10.support.NumberUtils;
@@ -53,6 +52,9 @@ public class HomeService {
 	
 	@Autowired
 	private RankingRepository rankingRepository;
+	
+	@Autowired
+	private RankingNativeQuery rankingNativeQuery;
 	
 	@Autowired
 	private BadgeService badgeService;
@@ -151,49 +153,38 @@ public class HomeService {
 	}
 
 	/**
-	 * Carrega ranking JÁ com badges em uma única operação.
-	 * @Transactional CRÍTICO: mantém sessão Hibernate aberta para evitar N+1 queries.
+	 * Carrega ranking JÁ com badges usando SQL NATIVO (bypassa Hibernate para evitar N+1).
 	 */
 	@Transactional(readOnly = true)
 	public List<RankingComBadges> carregarRankingCompleto() {
 		long inicio = System.currentTimeMillis();
-		
-		// ESTRATÉGIA: Carregar ranking uma vez, badges uma vez, montar em memória
-		// É mais rápido que tentar fazer um JOIN complexo entre ranking e usuario_badge
 		System.out.println(">>> [PERFORMANCE] Iniciando carregarRankingCompleto...");
 		
+		// USAR QUERY NATIVA: Uma única query SQL que traz ranking + usuario
 		long t1 = System.currentTimeMillis();
-		List<Ranking> ranking = rankingRepository.carregarRanking();
+		List<Ranking> ranking = rankingNativeQuery.carregarRankingComUsuarios();
 		long t2 = System.currentTimeMillis();
-		System.out.println(">>> [PERFORMANCE] carregarRanking() levou: " + (t2-t1) + "ms - " + ranking.size() + " registros");
+		System.out.println(">>> [PERFORMANCE] carregarRankingComUsuarios() levou: " + (t2-t1) + "ms - " + ranking.size() + " registros");
 		
-		// FORÇAR inicialização dos usuários AGORA (dentro da transação)
-		long t2a = System.currentTimeMillis();
-		for (Ranking r : ranking) {
-			Hibernate.initialize(r.getUsuario());
-		}
-		long t2b = System.currentTimeMillis();
-		System.out.println(">>> [PERFORMANCE] Hibernate.initialize() levou: " + (t2b-t2a) + "ms");
-		
-		// Coletar IDs de todos os usuários do ranking (agora já inicializados!)
+		// Coletar IDs dos usuários
 		List<Long> idsUsuarios = ranking.stream()
 				.map(r -> r.getUsuario().getId())
-				.collect(java.util.stream.Collectors.toList());
+				.collect(Collectors.toList());
 		
 		long t3 = System.currentTimeMillis();
-		// Buscar badges SOMENTE desses usuários (query otimizada)
+		// Buscar badges SOMENTE desses usuários
 		Map<Long, List<Badge>> badgesMap = badgeService.carregarMapaBadgesDeUsuarios(idsUsuarios);
 		long t4 = System.currentTimeMillis();
 		System.out.println(">>> [PERFORMANCE] carregarMapaBadgesDeUsuarios() levou: " + (t4-t3) + "ms");
 		
-		// Montar resultado com DTOs leves ao invés de entidades JPA
+		// Montar resultado com DTOs
 		long t5 = System.currentTimeMillis();
-		List<RankingComBadges> resultado = new java.util.ArrayList<>();
+		List<RankingComBadges> resultado = new ArrayList<>();
 		for (Ranking r : ranking) {
 			Long idUsuario = r.getUsuario().getId();
-			List<Badge> badges = badgesMap.getOrDefault(idUsuario, new java.util.ArrayList<>());
+			List<Badge> badges = badgesMap.getOrDefault(idUsuario, new ArrayList<>());
 			
-			// Converter Usuario para DTO leve (evita problemas de serialização JSON)
+			// Converter Usuario para DTO
 			UsuarioDTO usuarioDTO = new UsuarioDTO(r.getUsuario());
 			
 			RankingComBadges item = new RankingComBadges(

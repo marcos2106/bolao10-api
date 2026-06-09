@@ -50,15 +50,16 @@ public class RankingRepository extends GenericRepository {
 	}
 
 	/**
-	 * Carrega ranking com JOIN FETCH para otimizar performance.
-	 * Evita N+1 queries ao buscar Usuario junto com Ranking em uma única query.
+	 * Carrega ranking com EAGER FETCH usando LEFT JOIN FETCH + DISTINCT.
+	 * LEFT JOIN garante todos os rankings, DISTINCT evita duplicatas.
 	 */
 	public List<Ranking> carregarRanking() {
 		long inicio = System.currentTimeMillis();
 		
+		// DISTINCT obrigatório com JOIN FETCH para evitar duplicatas
 		StringBuilder sql = new StringBuilder();
-		sql.append(" select r from Ranking r ");
-		sql.append(" join fetch r.usuario u ");  // JOIN FETCH otimizado
+		sql.append(" select distinct r from Ranking r ");
+		sql.append(" left join fetch r.usuario u ");  // LEFT JOIN FETCH garante eager loading
 		sql.append(" order by r.pontuacao desc, u.nome ");
 
 		TypedQuery<Ranking> query = em.createQuery(sql.toString(), Ranking.class);
@@ -75,7 +76,8 @@ public class RankingRepository extends GenericRepository {
 		}
 		catch (Exception e) {
 			long fim = System.currentTimeMillis();
-			System.out.println(">>> [REPOSITORY] Query FALHOU em: " + (fim-inicio) + "ms");
+			System.out.println(">>> [REPOSITORY] Query FALHOU em: " + (fim-inicio) + "ms - " + e.getMessage());
+			e.printStackTrace();
 			return null;
 		}
 	}
