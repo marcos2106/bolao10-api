@@ -141,7 +141,7 @@ public class PontuacaoNativeQuery {
 		String sql = 
 			"SELECT " +
 			"  a.idusuario, a.idpartida, a.placarA, a.placarB, a.pontuacao, a.pontuacao_provisoria, " +
-			"  p.placarA as p_placarA, p.placarB as p_placarB, p.data_hora, p.fase, p.rodada, " +
+			"  p.placarA as p_placarA, p.placarB as p_placarB, p.datahora, p.fase, p.rodada, " +
 			"  p.iniciada, p.finalizada, " +
 			"  sa.idselecao as sa_id, sa.nome as sa_nome, sa.imagem as sa_img, sa.grupo as sa_grupo, " +
 			"  sb.idselecao as sb_id, sb.nome as sb_nome, sb.imagem as sb_img, sb.grupo as sb_grupo " +
@@ -150,7 +150,7 @@ public class PontuacaoNativeQuery {
 			"INNER JOIN selecao sa ON p.idselecaoA = sa.idselecao " +
 			"INNER JOIN selecao sb ON p.idselecaoB = sb.idselecao " +
 			"WHERE a.idusuario IN (" + String.join(",", mapaPontuacao.keySet().stream().map(String::valueOf).toArray(String[]::new)) + ") " +
-			"ORDER BY a.idusuario, p.data_hora";
+			"ORDER BY a.idusuario, p.datahora";
 
 		Query query = em.createNativeQuery(sql);
 		@SuppressWarnings("unchecked")
