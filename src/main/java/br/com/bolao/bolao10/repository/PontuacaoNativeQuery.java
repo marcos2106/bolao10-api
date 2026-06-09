@@ -212,7 +212,7 @@ public class PontuacaoNativeQuery {
 		String sql = 
 			"SELECT " +
 			"  ac.idusuario, " +
-			"  ac.pontos_campeao, ac.pontos_vice, ac.pontos_terceiro, ac.pontos_quarto, ac.pontos_artilharia, " +
+			"  ac.pontoscampeao, ac.pontosvice, ac.pontosterceiro, ac.pontosquarto, ac.pontosartilharia, " +
 			"  s_cam.idselecao as cam_id, s_cam.nome as cam_nome, s_cam.imagem as cam_img, s_cam.grupo as cam_grupo, " +
 			"  s_vic.idselecao as vic_id, s_vic.nome as vic_nome, s_vic.imagem as vic_img, s_vic.grupo as vic_grupo, " +
 			"  s_ter.idselecao as ter_id, s_ter.nome as ter_nome, s_ter.imagem as ter_img, s_ter.grupo as ter_grupo, " +
