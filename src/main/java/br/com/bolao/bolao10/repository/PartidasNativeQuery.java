@@ -57,13 +57,13 @@ public class PartidasNativeQuery {
 		// SQL NATIVO: JOIN entre partida e ambas as seleções em uma única query
 		String sql = 
 			"SELECT " +
-			"  p.idpartida, p.placarA, p.placarB, p.datahora, p.fase, p.rodada, " +
-			"  p.iniciada, p.finalizada, " +
-			"  sa.idselecao_a as idselecao_a, sa.nome as nome_a, sa.imagem as imagem_a, sa.grupo as grupo_a, " +
-			"  sb.idselecao_b as idselecao_b, sb.nome as nome_b, sb.imagem as imagem_b, sb.grupo as grupo_b " +
+			"  p.idpartida as p_id, p.placara as p_placar_a, p.placarb as p_placar_b, p.datahora as p_datahora, p.fase as p_fase, p.rodada as p_rodada, " +
+			"  p.iniciada as p_iniciada, p.finalizada as p_finalizada, " +
+			"  sa.idselecao as sa_id, sa.nome as sa_nome, sa.imagem as sa_img, sa.grupo as sa_grupo, " +
+			"  sb.idselecao as sb_id, sb.nome as sb_nome, sb.imagem as sb_img, sb.grupo as sb_grupo " +
 			"FROM partida p " +
-			"INNER JOIN selecao sa ON p.idselecaoA = sa.idselecao_a " +
-			"INNER JOIN selecao sb ON p.idselecaoB = sb.idselecao_b " +
+			"INNER JOIN selecao sa ON p.idselecaoA = sa.idselecao " +
+			"INNER JOIN selecao sb ON p.idselecaoB = sb.idselecao " +
 			"ORDER BY p.fase, p.rodada, p.datahora, p.idpartida";
 
 		Query query = em.createNativeQuery(sql);
@@ -146,13 +146,13 @@ public class PartidasNativeQuery {
 		// PASSO 1: Buscar as 3 próximas partidas não finalizadas
 		String sqlPartidas = 
 			"SELECT " +
-			"  p.idpartida, p.placarA, p.placarB, p.datahora, p.fase, p.rodada, " +
-			"  p.iniciada, p.finalizada, " +
-			"  sa.idselecao_a as idselecao_a, sa.nome as nome_a, sa.imagem as imagem_a, sa.grupo as grupo_a, sa.cor as cor_a, " +
-			"  sb.idselecao_b as idselecao_b, sb.nome as nome_b, sb.imagem as imagem_b, sb.grupo as grupo_b, sb.cor as cor_b " +
+			"  p.idpartida as p_id, p.placara as p_placar_a, p.placarb as p_placar_b, p.datahora as p_datahora, p.fase as p_fase, p.rodada as p_rodada, " +
+			"  p.iniciada as p_iniciada, p.finalizada as p_finalizada, " +
+			"  sa.idselecao as sa_id, sa.nome as sa_nome, sa.imagem as sa_img, sa.grupo as sa_grupo, sa.cor as sa_cor, " +
+			"  sb.idselecao as sb_id, sb.nome as sb_nome, sb.imagem as sb_img, sb.grupo as sb_grupo, sb.cor as sb_cor " +
 			"FROM partida p " +
-			"INNER JOIN selecao sa ON p.idselecaoA = sa.idselecao_a " +
-			"INNER JOIN selecao sb ON p.idselecaoB = sb.idselecao_b " +
+			"INNER JOIN selecao sa ON p.idselecaoA = sa.idselecao " +
+			"INNER JOIN selecao sb ON p.idselecaoB = sb.idselecao " +
 			"WHERE p.finalizada = 0 " +
 			"ORDER BY p.datahora " +
 			"LIMIT 3";

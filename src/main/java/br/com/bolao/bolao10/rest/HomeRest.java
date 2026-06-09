@@ -103,19 +103,20 @@ public class HomeRest extends BaseRest {
 	 */
 	@GetMapping(value = "/durante/grupo/otimizado", produces = MediaType.APPLICATION_JSON_VALUE)
 	public @ResponseBody ResponseEntity<?> carregarGruposOtimizado() {
+		String reqId = String.format("%04d", (int)(Math.random() * 10000));
 		long inicio = System.currentTimeMillis();
-		System.out.println(">>> [REST] Iniciando /durante/grupo/otimizado...");
+		System.out.println(">>> [REST:" + reqId + "] Iniciando /durante/grupo/otimizado...");
 		
 		Object resultado = homeService.carregarGruposOtimizado();
 		
 		long meio = System.currentTimeMillis();
-		System.out.println(">>> [REST] Service levou: " + (meio-inicio) + "ms");
+		System.out.println(">>> [REST:" + reqId + "] Service levou: " + (meio-inicio) + "ms");
 		
 		ResponseEntity<?> response = createObjectReturn(resultado);
 		
 		long fim = System.currentTimeMillis();
-		System.out.println(">>> [REST] createObjectReturn/serialização levou: " + (fim-meio) + "ms");
-		System.out.println(">>> [REST] TOTAL endpoint: " + (fim-inicio) + "ms");
+		System.out.println(">>> [REST:" + reqId + "] createObjectReturn/serialização levou: " + (fim-meio) + "ms");
+		System.out.println(">>> [REST:" + reqId + "] TOTAL endpoint: " + (fim-inicio) + "ms");
 		
 		return response;
 	}
