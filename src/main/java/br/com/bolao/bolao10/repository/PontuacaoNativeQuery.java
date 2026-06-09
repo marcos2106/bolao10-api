@@ -93,7 +93,7 @@ public class PontuacaoNativeQuery {
 			"  COALESCE(r.pontuacao, 0) as pontuacao " +
 			"FROM usuario u " +
 			"LEFT JOIN ranking r ON u.idusuario = r.idusuario " +
-			"WHERE u.ativo = 1 " +
+			"WHERE u.ativo = 1 AND u.perfil = 'USER' " +
 			"ORDER BY u.nome";
 
 		Query query = em.createNativeQuery(sql);
