@@ -29,8 +29,10 @@ import br.com.bolao.bolao10.model.UltimosUsuarios;
 import br.com.bolao.bolao10.model.UsuarioDTO;
 import br.com.bolao.bolao10.repository.ApostaRepository;
 import br.com.bolao.bolao10.repository.ClassificacaoRepository;
+import br.com.bolao.bolao10.repository.ClassificacaoNativeQuery;
 import br.com.bolao.bolao10.repository.ColocacaoRepository;
 import br.com.bolao.bolao10.repository.PartidaRepository;
+import br.com.bolao.bolao10.repository.PartidasNativeQuery;
 import br.com.bolao.bolao10.repository.RankingRepository;
 import br.com.bolao.bolao10.repository.RankingNativeQuery;
 import br.com.bolao.bolao10.repository.UserRepository;
@@ -55,6 +57,12 @@ public class HomeService {
 	
 	@Autowired
 	private RankingNativeQuery rankingNativeQuery;
+	
+	@Autowired
+	private PartidasNativeQuery partidasNativeQuery;
+	
+	@Autowired
+	private ClassificacaoNativeQuery classificacaoNativeQuery;
 	
 	@Autowired
 	private BadgeService badgeService;
@@ -238,4 +246,70 @@ public class HomeService {
 		return cu;
 	}
 
+	/**
+	 * OTIMIZADO: Carrega as 3 próximas partidas com apostas em 2 queries (ao invés de ~40 queries).
+	 * Usa PartidasNativeQuery para evitar N+1.
+	 */
+	@Transactional(readOnly = true)
+	public HomeDuranteProximasPartidas carregarPartidasOtimizado() {
+		long inicio = System.currentTimeMillis();
+		System.out.println(">>> [PERFORMANCE HOME] Iniciando carregarPartidasOtimizado...");
+		
+		HomeDuranteProximasPartidas pp = new HomeDuranteProximasPartidas();
+		
+		// USAR QUERY NATIVA: Busca 3 partidas + seleções + apostas em 2 queries
+		long t1 = System.currentTimeMillis();
+		List<Partida> listaPartidas = partidasNativeQuery.carregarProximasPartidasComApostas();
+		long t2 = System.currentTimeMillis();
+		System.out.println(">>> [PERFORMANCE HOME] carregarProximasPartidasComApostas() levou: " + (t2-t1) + "ms");
+		
+		if (listaPartidas != null && listaPartidas.size() > 0) {
+			pp.setPartida1(listaPartidas.get(0));
+			if (listaPartidas.size() > 1) {
+				pp.setPartida2(listaPartidas.get(1));
+			}
+			if (listaPartidas.size() > 2) {
+				pp.setPartida3(listaPartidas.get(2));
+			}
+		}
+		
+		long fim = System.currentTimeMillis();
+		System.out.println(">>> [PERFORMANCE HOME] TOTAL carregarPartidasOtimizado: " + (fim-inicio) + "ms");
+		
+		return pp;
+	}
+
+	/**
+	 * OTIMIZADO: Carrega classificação dos grupos em 1 query (ao invés de 32 queries).
+	 * Usa ClassificacaoNativeQuery para evitar N+1.
+	 */
+	@Transactional(readOnly = true)
+	public List<ClassificacaoGrupo> carregarGruposOtimizado() {
+		long inicio = System.currentTimeMillis();
+		System.out.println(">>> [PERFORMANCE HOME] Iniciando carregarGruposOtimizado...");
+		
+		// USAR QUERY NATIVA: Busca classificações + seleções em 1 query
+		long t1 = System.currentTimeMillis();
+		List<Classificacao> listaClassificacao = classificacaoNativeQuery.carregarClassificacaoComSelecoes();
+		long t2 = System.currentTimeMillis();
+		System.out.println(">>> [PERFORMANCE HOME] carregarClassificacaoComSelecoes() levou: " + (t2-t1) + "ms");
+		
+		// Agrupar por grupo (mantém lógica original)
+		List<ClassificacaoGrupo> listaGrupo = new ArrayList<ClassificacaoGrupo>();
+		for (String grupo : Constants.GRUPOS) {
+			ClassificacaoGrupo cgA = new ClassificacaoGrupo();
+			cgA.setGrupo(grupo);
+			cgA.setListaClassificacao(listaClassificacao.stream().filter( (c) -> {
+				return c.getSelecao().getGrupo().equalsIgnoreCase(grupo);
+			}).collect(Collectors.toList()));
+			listaGrupo.add(cgA);
+		}
+		
+		long fim = System.currentTimeMillis();
+		System.out.println(">>> [PERFORMANCE HOME] TOTAL carregarGruposOtimizado: " + (fim-inicio) + "ms");
+		
+		return listaGrupo;
+	}
+
 }
+

@@ -37,6 +37,28 @@ public class HomeRest extends BaseRest {
 	public @ResponseBody ResponseEntity<?> carregarPartidas() {
 		return createObjectReturn(homeService.carregarPartidas());
 	}
+
+	/**
+	 * Endpoint OTIMIZADO: retorna 3 próximas partidas com apostas em 2 queries (ao invés de ~40).
+	 */
+	@GetMapping(value = "/durante/partidas/otimizado", produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody ResponseEntity<?> carregarPartidasOtimizado() {
+		long inicio = System.currentTimeMillis();
+		System.out.println(">>> [REST] Iniciando /durante/partidas/otimizado...");
+		
+		Object resultado = homeService.carregarPartidasOtimizado();
+		
+		long meio = System.currentTimeMillis();
+		System.out.println(">>> [REST] Service levou: " + (meio-inicio) + "ms");
+		
+		ResponseEntity<?> response = createObjectReturn(resultado);
+		
+		long fim = System.currentTimeMillis();
+		System.out.println(">>> [REST] createObjectReturn/serialização levou: " + (fim-meio) + "ms");
+		System.out.println(">>> [REST] TOTAL endpoint: " + (fim-inicio) + "ms");
+		
+		return response;
+	}
 	
 	@GetMapping(value = "/durante/partidas/anteriores", produces = MediaType.APPLICATION_JSON_VALUE)
 	public @ResponseBody ResponseEntity<?> carregarPartidasAnteriores() {
@@ -74,6 +96,28 @@ public class HomeRest extends BaseRest {
 	@GetMapping(value = "/durante/grupo", produces = MediaType.APPLICATION_JSON_VALUE)
 	public @ResponseBody ResponseEntity<?> carregarGrupos() {
 		return createObjectReturn(homeService.carregarGrupos());
+	}
+
+	/**
+	 * Endpoint OTIMIZADO: retorna grupos de classificação em 1 query (ao invés de 32).
+	 */
+	@GetMapping(value = "/durante/grupo/otimizado", produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody ResponseEntity<?> carregarGruposOtimizado() {
+		long inicio = System.currentTimeMillis();
+		System.out.println(">>> [REST] Iniciando /durante/grupo/otimizado...");
+		
+		Object resultado = homeService.carregarGruposOtimizado();
+		
+		long meio = System.currentTimeMillis();
+		System.out.println(">>> [REST] Service levou: " + (meio-inicio) + "ms");
+		
+		ResponseEntity<?> response = createObjectReturn(resultado);
+		
+		long fim = System.currentTimeMillis();
+		System.out.println(">>> [REST] createObjectReturn/serialização levou: " + (fim-meio) + "ms");
+		System.out.println(">>> [REST] TOTAL endpoint: " + (fim-inicio) + "ms");
+		
+		return response;
 	}
 
 	@GetMapping(value = "/depois/colocacao", produces = MediaType.APPLICATION_JSON_VALUE)
