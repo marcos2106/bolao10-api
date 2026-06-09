@@ -43,11 +43,9 @@ public class Usuario implements Serializable {
 	@Column(name = "telefone", nullable = true, columnDefinition = "VARCHAR(11)")
 	private String telefone;
 
-	@JsonIgnore  // NÃO serializar email (privacidade)
 	@Column(name = "email", nullable = false, columnDefinition = "VARCHAR(100)")
 	private String email;
 
-	@JsonIgnore  // CRÍTICO: NÃO serializar senha!
 	@Column(name = "senha", nullable = false, columnDefinition = "VARCHAR(8)")
 	private String senha;
 
