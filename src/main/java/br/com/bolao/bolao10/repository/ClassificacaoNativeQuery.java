@@ -30,9 +30,10 @@ public class ClassificacaoNativeQuery {
 		long inicio = System.currentTimeMillis();
 		
 		// SQL NATIVO: JOIN entre classificacao e selecao em uma única query
+		// NOTA: partidas e aproveitamento são calculados no getter da entidade, não existem no banco
 		String sql = 
 			"SELECT " +
-			"  c.idselecao, c.pontos, c.partidas, c.vitoria, c.empate, c.derrota, " +
+			"  c.idselecao, c.pontos, c.vitoria, c.empate, c.derrota, " +
 			"  c.golspro, c.golscontra, c.saldogols, " +
 			"  c.pontosanterior, c.vitoriaanterior, c.empateanterior, c.derrotaanterior, " +
 			"  c.golsproanterior, c.golscontraanterior, c.saldogolsanterior, " +
@@ -52,20 +53,24 @@ public class ClassificacaoNativeQuery {
 		long t2 = System.currentTimeMillis();
 		System.out.println(">>> [NATIVE CLASSIFICACAO] Query executada em: " + (t2-t1) + "ms - Retornou " + resultados.size() + " registros");
 		
-		// Mapear manualmente para objetos Classificacao + Selecao
+		// Índices:  0=idselecao, 1=pontos, 2=vitoria, 3=empate, 4=derrota,
+		//           5=golspro, 6=golscontra, 7=saldogols,
+		//           8=pontosant, 9=vitoriaant, 10=empateant, 11=derrotaant,
+		//           12=golsproant, 13=golscontraant, 14=saldogolsant,
+		//           15=s.idselecao, 16=s.nome, 17=s.imagem, 18=s.grupo, 19=s.cor
 		List<Classificacao> classificacoes = new ArrayList<>();
 		for (Object[] row : resultados) {
 			// Criar Selecao
 			Selecao selecao = new Selecao();
-			selecao.setId(((Number) row[17]).longValue());
-			selecao.setNome((String) row[18]);
-			selecao.setImagem((String) row[19]);
-			selecao.setGrupo((String) row[20]);
-			if (row[21] != null) {
-				selecao.setCor((String) row[21]);
+			selecao.setId(((Number) row[15]).longValue());
+			selecao.setNome((String) row[16]);
+			selecao.setImagem((String) row[17]);
+			selecao.setGrupo((String) row[18]);
+			if (row[19] != null) {
+				selecao.setCor((String) row[19]);
 			}
 			
-			// Criar Classificacao (setters usam camelCase com "Anterior")
+			// Criar Classificacao (partidas e aproveitamento são calculados nos getters, não precisam de setter)
 			Classificacao classificacao = new Classificacao();
 			classificacao.setSelecao(selecao);
 			
@@ -78,7 +83,7 @@ public class ClassificacaoNativeQuery {
 			if (row[7] != null) classificacao.setSaldogols(((Number) row[7]).intValue());
 			
 			if (row[8] != null)  classificacao.setPontosAnterior(((Number) row[8]).intValue());
-			if (row[9] != null) classificacao.setVitoriaAnterior(((Number) row[9]).intValue());
+			if (row[9] != null)  classificacao.setVitoriaAnterior(((Number) row[9]).intValue());
 			if (row[10] != null) classificacao.setEmpateAnterior(((Number) row[10]).intValue());
 			if (row[11] != null) classificacao.setDerrotaAnterior(((Number) row[11]).intValue());
 			if (row[12] != null) classificacao.setGolsproAnterior(((Number) row[12]).intValue());
