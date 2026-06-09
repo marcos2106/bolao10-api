@@ -147,8 +147,8 @@ public class PontuacaoNativeQuery {
 			"  sb.idselecao as sb_id, sb.nome as sb_nome, sb.imagem as sb_img, sb.grupo as sb_grupo " +
 			"FROM aposta a " +
 			"INNER JOIN partida p ON a.idpartida = p.idpartida " +
-			"INNER JOIN selecao sa ON p.idselecao_a = sa.idselecao " +
-			"INNER JOIN selecao sb ON p.idselecao_b = sb.idselecao " +
+			"INNER JOIN selecao sa ON p.idselecaoA = sa.idselecao " +
+			"INNER JOIN selecao sb ON p.idselecaoB = sb.idselecao " +
 			"WHERE a.idusuario IN (" + String.join(",", mapaPontuacao.keySet().stream().map(String::valueOf).toArray(String[]::new)) + ") " +
 			"ORDER BY a.idusuario, p.data_hora";
 
@@ -219,11 +219,11 @@ public class PontuacaoNativeQuery {
 			"  s_qua.idselecao as qua_id, s_qua.nome as qua_nome, s_qua.imagem as qua_img, s_qua.grupo as qua_grupo, " +
 			"  s_art.idselecao as art_id, s_art.nome as art_nome, s_art.imagem as art_img, s_art.grupo as art_grupo " +
 			"FROM aposta_colocacao ac " +
-			"LEFT JOIN selecao s_cam ON ac.campeao_id = s_cam.idselecao " +
-			"LEFT JOIN selecao s_vic ON ac.vice_id = s_vic.idselecao " +
-			"LEFT JOIN selecao s_ter ON ac.terceiro_id = s_ter.idselecao " +
-			"LEFT JOIN selecao s_qua ON ac.quarto_id = s_qua.idselecao " +
-			"LEFT JOIN selecao s_art ON ac.artilharia_id = s_art.idselecao " +
+			"LEFT JOIN selecao s_cam ON ac.campeao = s_cam.idselecao " +
+			"LEFT JOIN selecao s_vic ON ac.vice = s_vic.idselecao " +
+			"LEFT JOIN selecao s_ter ON ac.terceiro = s_ter.idselecao " +
+			"LEFT JOIN selecao s_qua ON ac.quarto = s_qua.idselecao " +
+			"LEFT JOIN selecao s_art ON ac.artilharia = s_art.idselecao " +
 			"WHERE ac.idusuario IN (" + String.join(",", mapaPontuacao.keySet().stream().map(String::valueOf).toArray(String[]::new)) + ")";
 
 		Query query = em.createNativeQuery(sql);

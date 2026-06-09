@@ -1,7 +1,6 @@
 package br.com.bolao.bolao10.repository;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +61,9 @@ public class PartidasNativeQuery {
 			"  p.iniciada, p.finalizada, " +
 			"  sa.idselecao as idselecao_a, sa.nome as nome_a, sa.imagem as imagem_a, sa.grupo as grupo_a, " +
 			"  sb.idselecao as idselecao_b, sb.nome as nome_b, sb.imagem as imagem_b, sb.grupo as grupo_b " +
+			"FROM partida p " +
+			"INNER JOIN selecao sa ON p.idselecaoA = sa.idselecao " +
+			"INNER JOIN selecao sb ON p.idselecaoB = sb.idselecao " +
 			"ORDER BY p.fase, p.rodada, p.data_hora, p.idpartida";
 
 		Query query = em.createNativeQuery(sql);
