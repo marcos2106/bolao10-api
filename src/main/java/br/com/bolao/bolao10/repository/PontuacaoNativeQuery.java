@@ -2,7 +2,7 @@ package br.com.bolao.bolao10.repository;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -100,7 +100,7 @@ public class PontuacaoNativeQuery {
 		@SuppressWarnings("unchecked")
 		List<Object[]> resultados = query.getResultList();
 		
-		Map<Long, PontuacaoUsuarioPartida> mapa = new HashMap<>();
+		Map<Long, PontuacaoUsuarioPartida> mapa = new LinkedHashMap<>();
 		for (Object[] row : resultados) {
 			Usuario usuario = new Usuario();
 			usuario.setId(((Number) row[0]).longValue());
