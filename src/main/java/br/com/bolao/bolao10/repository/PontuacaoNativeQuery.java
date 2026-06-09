@@ -140,8 +140,8 @@ public class PontuacaoNativeQuery {
 	private void carregarTodasApostas(Map<Long, PontuacaoUsuarioPartida> mapaPontuacao) {
 		String sql = 
 			"SELECT " +
-			"  a.idusuario, a.idpartida, a.placar_a, a.placar_b, a.pontuacao, a.pontuacao_provisoria, " +
-			"  p.placar_a as p_placar_a, p.placar_b as p_placar_b, p.data_hora, p.fase, p.rodada, " +
+			"  a.idusuario, a.idpartida, a.placarA, a.placarB, a.pontuacao, a.pontuacao_provisoria, " +
+			"  p.placarA as p_placarA, p.placarB as p_placarB, p.data_hora, p.fase, p.rodada, " +
 			"  p.iniciada, p.finalizada, " +
 			"  sa.idselecao as sa_id, sa.nome as sa_nome, sa.imagem as sa_img, sa.grupo as sa_grupo, " +
 			"  sb.idselecao as sb_id, sb.nome as sb_nome, sb.imagem as sb_img, sb.grupo as sb_grupo " +

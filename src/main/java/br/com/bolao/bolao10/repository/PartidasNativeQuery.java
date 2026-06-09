@@ -57,7 +57,7 @@ public class PartidasNativeQuery {
 		// SQL NATIVO: JOIN entre partida e ambas as seleções em uma única query
 		String sql = 
 			"SELECT " +
-			"  p.idpartida, p.placar_a, p.placar_b, p.data_hora, p.fase, p.rodada, " +
+			"  p.idpartida, p.placarA, p.placarB, p.data_hora, p.fase, p.rodada, " +
 			"  p.iniciada, p.finalizada, " +
 			"  sa.idselecao as idselecao_a, sa.nome as nome_a, sa.imagem as imagem_a, sa.grupo as grupo_a, " +
 			"  sb.idselecao as idselecao_b, sb.nome as nome_b, sb.imagem as imagem_b, sb.grupo as grupo_b " +
