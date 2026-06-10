@@ -19,6 +19,20 @@ import br.com.bolao.bolao10.support.Constants;
 @Repository
 public class ApostaRepository extends GenericRepository {
 
+	private int toInt(Object value) {
+		if (value == null) {
+			return 0;
+		}
+		if (value instanceof Number) {
+			return ((Number) value).intValue();
+		}
+		try {
+			return Integer.parseInt(value.toString());
+		} catch (Exception e) {
+			return 0;
+		}
+	}
+
 	@Autowired
 	private EntityManager em;
 
@@ -67,36 +81,27 @@ public class ApostaRepository extends GenericRepository {
 	public ApostaPartida calcularApostasPorPartida(Long idPartida) {
 
 		ApostaPartida ap = new ApostaPartida();
-		String sqlBasico = " select a from Aposta a where a.partida.id = :idPartida	";
+		StringBuilder sql = new StringBuilder();
+		sql.append(" select                   ");
+		sql.append("   sum(case when a.placarA > a.placarB then 1 else 0 end) as numA, ");
+		sql.append("   sum(case when a.placarA = a.placarB then 1 else 0 end) as numE, ");
+		sql.append("   sum(case when a.placarA < a.placarB then 1 else 0 end) as numB ");
+		sql.append(" from aposta a                  ");
+		sql.append(" where a.idpartida = :idPartida            ");
 
-		// QNTS VITORIAS SELECAO A
-		TypedQuery<Aposta> queryA = em.createQuery(sqlBasico + " and a.placarA > a.placarB ", Aposta.class);
-		queryA.setParameter("idPartida", idPartida);
 		try {
-			ap.setNumSelecaoA(queryA.getResultList().size());
+			Query query = em.createNativeQuery(sql.toString());
+			query.setParameter("idPartida", idPartida);
+			Object[] result = (Object[]) query.getSingleResult();
+
+			ap.setNumSelecaoA(toInt(result[0]));
+			ap.setNumEmpate(toInt(result[1]));
+			ap.setNumSelecaoB(toInt(result[2]));
 		}
 		catch (Exception e) {
-			ap.setNumSelecaoA(0);			
-		}
-
-		// QNTS EMPATE
-		TypedQuery<Aposta> queryE = em.createQuery(sqlBasico +" and a.placarA = a.placarB	", Aposta.class);
-		queryE.setParameter("idPartida", idPartida);
-		try {
-			ap.setNumEmpate(queryE.getResultList().size());
-		}
-		catch (Exception e) {
-			ap.setNumEmpate(0);			
-		}
-
-		// QNTS VITORIAS SELECAO B
-		TypedQuery<Aposta> queryB = em.createQuery(sqlBasico +" and a.placarA < a.placarB	", Aposta.class);
-		queryB.setParameter("idPartida", idPartida);
-		try {
-			ap.setNumSelecaoB(queryB.getResultList().size());
-		}
-		catch (Exception e) {
-			ap.setNumSelecaoB(0);			
+			ap.setNumSelecaoA(0);
+			ap.setNumEmpate(0);
+			ap.setNumSelecaoB(0);
 		}
 		return ap;
 	}
@@ -104,8 +109,17 @@ public class ApostaRepository extends GenericRepository {
 	public List<Aposta> carregarApostaPorPartida(Long idPartida) {
 
 		StringBuilder sql = new StringBuilder();
-		sql.append(" select a from Aposta a	 			");
-		sql.append(" where a.partida.id = :idPartida		");
+		sql.append(" select a from Aposta a                ");
+		sql.append(" join fetch a.usuario                ");
+		sql.append(" join fetch a.partida p              ");
+		sql.append(" join fetch p.selecaoA              ");
+		sql.append(" join fetch p.selecaoB              ");
+		sql.append(" where p.id = :idPartida              ");
+		sql.append(" order by                  ");
+		sql.append("   case when p.iniciada = true and p.finalizada = true then a.pontuacao end desc, ");
+		sql.append("   case when p.iniciada = true and p.finalizada = false then a.pontuacaoProvisoria end desc, ");
+		sql.append("   case when p.iniciada = false then a.placarA end asc, ");
+		sql.append("   case when p.iniciada = false then a.placarB end asc   ");
 
 		TypedQuery<Aposta> query = em.createQuery(sql.toString(), Aposta.class);
 		query.setParameter("idPartida", idPartida);
@@ -113,8 +127,9 @@ public class ApostaRepository extends GenericRepository {
 		try {
 			return query.getResultList();
 		}
-		catch (Exception e) {}
-		return null;
+		catch (Exception e) {
+			return new java.util.ArrayList<>();
+		}
 	}
 
 	public List<Aposta> carregarApostaPorUsuario(Long idUsuario) {

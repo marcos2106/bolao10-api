@@ -238,22 +238,8 @@ public class BolaoService {
 			if (idPartida == null) {
 				throw new Bolao10Exception("Apostas não encontradas!");
 			}
-			Partida partida = partidaRepository.findById(idPartida);
-
-			List<Aposta> listaAposta = new ArrayList<Aposta>();
 			try {
-				listaAposta = apostaRepository.carregarApostaPorPartida(idPartida);
-
-				if (partida.getIniciada()) {
-					if (partida.getFinalizada()) {
-						Collections.sort(listaAposta, Comparator.comparing(Aposta::getPontuacao).reversed());
-					} else {
-						Collections.sort(listaAposta, Comparator.comparing(Aposta::getPontuacaoProvisoria).reversed());
-					}
-				} else {
-					Collections.sort(listaAposta, Comparator.comparing(Aposta::getPlacarA));
-				}
-				return listaAposta;
+				return apostaRepository.carregarApostaPorPartida(idPartida);
 
 			} catch (Exception e) {
 				return new ArrayList<Aposta>();

@@ -30,6 +30,24 @@ public class PartidaRepository extends GenericRepository {
 	public Partida findById(Long id) {
 		return super.find(Partida.class, id);
 	}
+
+	public Partida carregarPartidaComSelecoes(Long id) {
+
+		StringBuilder sql = new StringBuilder();
+		sql.append(" select p from Partida p        ");
+		sql.append(" join fetch p.selecaoA          ");
+		sql.append(" join fetch p.selecaoB          ");
+		sql.append(" where p.id = :id            ");
+
+		TypedQuery<Partida> query = em.createQuery(sql.toString(), Partida.class);
+		query.setParameter("id", id);
+		try {
+			return query.getSingleResult();
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
 	
 	public List<Partida> carregarPartidasConfiguracao() {
 		
@@ -125,7 +143,9 @@ public class PartidaRepository extends GenericRepository {
 	public List<Partida> carregarPartidasPorSelecao(Long id) {
 
 		StringBuilder sql = new StringBuilder();
-		sql.append(" select p from Partida p		");
+		sql.append(" select p from Partida p		    ");
+		sql.append(" join fetch p.selecaoA          ");
+		sql.append(" join fetch p.selecaoB          ");
 		sql.append(" where p.selecaoA.id = :idIda	");
 		sql.append(" or p.selecaoB.id = :idVolta	");
 		sql.append(" order by p.dataHora	");

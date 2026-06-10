@@ -4,6 +4,7 @@ package br.com.bolao.bolao10.repository;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,32 +70,63 @@ public class ApostaColocacaoRepository extends GenericRepository {
 
 		ApostaColocacaoSelecao apSel = new ApostaColocacaoSelecao();
 
-		apSel.setCampeaoA(calcularQuantidadeAposta("campeao", idSelecaoA));
-		apSel.setViceA(calcularQuantidadeAposta("vice", idSelecaoA));
-		apSel.setTerceiroA(calcularQuantidadeAposta("terceiro", idSelecaoA));
-		apSel.setQuartoA(calcularQuantidadeAposta("quarto", idSelecaoA));
-		apSel.setArtilhariaA(calcularQuantidadeAposta("artilharia", idSelecaoA));
+		StringBuilder sql = new StringBuilder();
+		sql.append(" select             ");
+		sql.append("   sum(case when c.campeao.id = :idA then 1 else 0 end), ");
+		sql.append("   sum(case when c.vice.id = :idA then 1 else 0 end),  ");
+		sql.append("   sum(case when c.terceiro.id = :idA then 1 else 0 end), ");
+		sql.append("   sum(case when c.quarto.id = :idA then 1 else 0 end),  ");
+		sql.append("   sum(case when c.artilharia.id = :idA then 1 else 0 end), ");
+		sql.append("   sum(case when c.campeao.id = :idB then 1 else 0 end), ");
+		sql.append("   sum(case when c.vice.id = :idB then 1 else 0 end),  ");
+		sql.append("   sum(case when c.terceiro.id = :idB then 1 else 0 end), ");
+		sql.append("   sum(case when c.quarto.id = :idB then 1 else 0 end),  ");
+		sql.append("   sum(case when c.artilharia.id = :idB then 1 else 0 end) ");
+		sql.append(" from ApostaColocacao c         ");
 
-		apSel.setCampeaoB(calcularQuantidadeAposta("campeao", idSelecaoB));
-		apSel.setViceB(calcularQuantidadeAposta("vice", idSelecaoB));
-		apSel.setTerceiroB(calcularQuantidadeAposta("terceiro", idSelecaoB));
-		apSel.setQuartoB(calcularQuantidadeAposta("quarto", idSelecaoB));
-		apSel.setArtilhariaB(calcularQuantidadeAposta("artilharia", idSelecaoB));
+		try {
+			Query query = em.createQuery(sql.toString());
+			query.setParameter("idA", idSelecaoA);
+			query.setParameter("idB", idSelecaoB);
+			Object[] result = (Object[]) query.getSingleResult();
+
+			apSel.setCampeaoA(toLong(result[0]));
+			apSel.setViceA(toLong(result[1]));
+			apSel.setTerceiroA(toLong(result[2]));
+			apSel.setQuartoA(toLong(result[3]));
+			apSel.setArtilhariaA(toLong(result[4]));
+			apSel.setCampeaoB(toLong(result[5]));
+			apSel.setViceB(toLong(result[6]));
+			apSel.setTerceiroB(toLong(result[7]));
+			apSel.setQuartoB(toLong(result[8]));
+			apSel.setArtilhariaB(toLong(result[9]));
+		}
+		catch (Exception e) {
+			apSel.setCampeaoA(0L);
+			apSel.setViceA(0L);
+			apSel.setTerceiroA(0L);
+			apSel.setQuartoA(0L);
+			apSel.setArtilhariaA(0L);
+			apSel.setCampeaoB(0L);
+			apSel.setViceB(0L);
+			apSel.setTerceiroB(0L);
+			apSel.setQuartoB(0L);
+			apSel.setArtilhariaB(0L);
+		}
 
 		return apSel;
 	}
 
-	private Long calcularQuantidadeAposta(String colocacao, Long idSelecao) {
-
-		StringBuilder sql = new StringBuilder();
-		sql.append(" select count(*) as total from ApostaColocacao c where "+ colocacao +".id=:idSelecao ");
-
-		TypedQuery<Long> query = em.createQuery(sql.toString(), Long.class);
-		query.setParameter("idSelecao", idSelecao);
-		try {
-			return query.getSingleResult();
+	private Long toLong(Object value) {
+		if (value == null) {
+			return 0L;
 		}
-		catch (Exception e) {
+		if (value instanceof Number) {
+			return ((Number) value).longValue();
+		}
+		try {
+			return Long.valueOf(value.toString());
+		} catch (Exception e) {
 			return 0L;
 		}
 	}

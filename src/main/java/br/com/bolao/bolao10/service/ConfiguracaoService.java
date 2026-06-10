@@ -566,7 +566,7 @@ public class ConfiguracaoService {
 		if (id == null) {
 			throw new Bolao10Exception("Partida não encontrada!");
 		}
-		Partida partida = partidaRepository.findById(id);
+		Partida partida = partidaRepository.carregarPartidaComSelecoes(id);
 
 		if (partida == null) {
 			throw new Bolao10Exception("Partida não encontrada!");
@@ -580,7 +580,7 @@ public class ConfiguracaoService {
 
 	public PartidasOutras carregarOutrasPartidas(Long id) {
 
-		Partida partida = partidaRepository.findById(id);
+		Partida partida = partidaRepository.carregarPartidaComSelecoes(id);
 
 		if (partida == null) {
 			throw new Bolao10Exception("Partida não encontrada!");

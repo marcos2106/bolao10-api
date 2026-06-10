@@ -34,10 +34,12 @@ public class GolRepository extends GenericRepository {
 	public List<Gol> carregarGolsPorPartida(Long idPartida) {
 
 		StringBuilder sql = new StringBuilder();
-		sql.append(" select g		            		");
-		sql.append(" from Gol g	 						");
-		sql.append(" where g.partida.id = :idPartida	");
-		sql.append(" order by g.minuto					");
+		sql.append(" select g        ");
+		sql.append(" from Gol g        ");
+		sql.append(" join fetch g.jogador      ");
+		sql.append(" join fetch g.selecao      ");
+		sql.append(" where g.partida.id = :idPartida   ");
+		sql.append(" order by g.minuto      ");
 
 		TypedQuery<Gol> query = em.createQuery(sql.toString(), Gol.class);
 		query.setParameter("idPartida", idPartida);
