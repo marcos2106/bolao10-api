@@ -2,7 +2,12 @@
 package br.com.bolao.bolao10.repository;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -12,7 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import br.com.bolao.bolao10.domain.Aposta;
+import br.com.bolao.bolao10.domain.Partida;
+import br.com.bolao.bolao10.domain.Selecao;
 import br.com.bolao.bolao10.domain.Usuario;
+import br.com.bolao.bolao10.domain.enums.NivelUsuarioEnum;
+import br.com.bolao.bolao10.domain.enums.UserProfile;
 import br.com.bolao.bolao10.model.ApostaPartida;
 import br.com.bolao.bolao10.support.Constants;
 
@@ -31,6 +40,35 @@ public class ApostaRepository extends GenericRepository {
 		} catch (Exception e) {
 			return 0;
 		}
+	}
+
+	private Integer toInteger(Object value) {
+		return value == null ? null : Integer.valueOf(((Number) value).intValue());
+	}
+
+	private Long toLong(Object value) {
+		return value == null ? null : Long.valueOf(((Number) value).longValue());
+	}
+
+	private Boolean toBoolean(Object value) {
+		if (value == null) {
+			return null;
+		}
+		if (value instanceof Boolean) {
+			return (Boolean) value;
+		}
+		if (value instanceof Number) {
+			return ((Number) value).intValue() != 0;
+		}
+		if (value instanceof byte[]) {
+			byte[] bytes = (byte[]) value;
+			return bytes.length > 0 && bytes[0] != 0;
+		}
+		return "1".equals(value.toString()) || Boolean.valueOf(value.toString());
+	}
+
+	private LocalDateTime toLocalDateTime(Object value) {
+		return value == null ? null : ((Timestamp) value).toLocalDateTime();
 	}
 
 	@Autowired
@@ -135,22 +173,119 @@ public class ApostaRepository extends GenericRepository {
 	public List<Aposta> carregarApostaPorUsuario(Long idUsuario) {
 
 		StringBuilder sql = new StringBuilder();
-		sql.append(" select a from Aposta a	 				");
-		sql.append(" join fetch a.usuario					");
-		sql.append(" join fetch a.partida p					");
-		sql.append(" join fetch p.selecaoA					");
-		sql.append(" join fetch p.selecaoB					");
-		sql.append(" where a.usuario.id = :idUsuario		");
-		sql.append(" order by p.dataHora 					");
+		sql.append(" select ");
+		sql.append("   a.idpartida as a_idpartida, a.idusuario as a_idusuario, ");
+		sql.append("   a.placarA as a_placarA, a.placarB as a_placarB, ");
+		sql.append("   a.pontuacao as a_pontuacao, ");
+		sql.append("   a.pontuacao_provisoria as a_pontuacao_provisoria, ");
+		sql.append("   p.placarA as p_placarA, p.placarB as p_placarB, ");
+		sql.append("   p.iniciada as p_iniciada, p.finalizada as p_finalizada, ");
+		sql.append("   p.datahora as p_datahora, p.fase as p_fase, ");
+		sql.append("   p.rodada as p_rodada, p.local as p_local, ");
+		sql.append("   sa.idselecao as sa_idselecao, sa.nome as sa_nome, ");
+		sql.append("   sa.imagem as sa_imagem, sa.ativo as sa_ativo, ");
+		sql.append("   sa.grupo as sa_grupo, sa.cor as sa_cor, ");
+		sql.append("   sb.idselecao as sb_idselecao, sb.nome as sb_nome, ");
+		sql.append("   sb.imagem as sb_imagem, sb.ativo as sb_ativo, ");
+		sql.append("   sb.grupo as sb_grupo, sb.cor as sb_cor, ");
+		sql.append("   u.idusuario as u_idusuario, u.nome as u_nome, ");
+		sql.append("   u.cidade as u_cidade, u.telefone as u_telefone, ");
+		sql.append("   u.email as u_email, u.senha as u_senha, ");
+		sql.append("   u.perfil as u_perfil, u.ativo as u_ativo, ");
+		sql.append("   u.aposta as u_aposta, u.pagamento as u_pagamento, ");
+		sql.append("   u.primeiro as u_primeiro, u.nivel as u_nivel, ");
+		sql.append("   u.avatar as u_avatar, u.datahoraaposta as u_datahoraaposta, ");
+		sql.append("   u.datahorapgto as u_datahorapgto ");
+		sql.append(" from aposta a ");
+		sql.append(" join partida p on p.idpartida = a.idpartida ");
+		sql.append(" join selecao sa on sa.idselecao = p.idselecaoA ");
+		sql.append(" join selecao sb on sb.idselecao = p.idselecaoB ");
+		sql.append(" join usuario u on u.idusuario = a.idusuario ");
+		sql.append(" where a.idusuario = :idUsuario ");
+		sql.append(" order by p.datahora ");
 
-		TypedQuery<Aposta> query = em.createQuery(sql.toString(), Aposta.class);
+		Query query = em.createNativeQuery(sql.toString());
 		query.setParameter("idUsuario", idUsuario);
 
 		try {
-			return query.getResultList();
+			List<Object[]> resultados = query.getResultList();
+			List<Aposta> apostas = new ArrayList<>(resultados.size());
+			Map<Long, Selecao> selecoes = new HashMap<>();
+			Usuario usuario = null;
+
+			for (Object[] resultado : resultados) {
+				if (usuario == null) {
+					usuario = mapearUsuario(resultado);
+				}
+
+				Partida partida = new Partida();
+				partida.setId(toLong(resultado[0]));
+				partida.setPlacarA(toInteger(resultado[6]));
+				partida.setPlacarB(toInteger(resultado[7]));
+				partida.setIniciada(toBoolean(resultado[8]));
+				partida.setFinalizada(toBoolean(resultado[9]));
+				partida.setDataHora(toLocalDateTime(resultado[10]));
+				partida.setFase(toInt(resultado[11]));
+				partida.setRodada(toInteger(resultado[12]));
+				partida.setLocal((String) resultado[13]);
+				partida.setSelecaoA(mapearSelecao(resultado, 14, selecoes));
+				partida.setSelecaoB(mapearSelecao(resultado, 20, selecoes));
+
+				Aposta aposta = new Aposta();
+				aposta.setPartida(partida);
+				aposta.setUsuario(usuario);
+				aposta.setPlacarA(toInteger(resultado[2]));
+				aposta.setPlacarB(toInteger(resultado[3]));
+				aposta.setPontuacao(toInteger(resultado[4]));
+				aposta.setPontuacaoProvisoria(toInteger(resultado[5]));
+				apostas.add(aposta);
+			}
+
+			return apostas;
 		}
-		catch (Exception e) {}
-		return null;
+		catch (Exception e) {
+			return null;
+		}
+	}
+
+	private Selecao mapearSelecao(Object[] resultado, int inicio, Map<Long, Selecao> selecoes) {
+		Long idSelecao = toLong(resultado[inicio]);
+		Selecao selecao = selecoes.get(idSelecao);
+		if (selecao != null) {
+			return selecao;
+		}
+
+		selecao = new Selecao();
+		selecao.setId(idSelecao);
+		selecao.setNome((String) resultado[inicio + 1]);
+		selecao.setImagem((String) resultado[inicio + 2]);
+		selecao.setAtivo(toBoolean(resultado[inicio + 3]));
+		selecao.setGrupo((String) resultado[inicio + 4]);
+		selecao.setCor((String) resultado[inicio + 5]);
+		selecoes.put(idSelecao, selecao);
+		return selecao;
+	}
+
+	private Usuario mapearUsuario(Object[] resultado) {
+		Usuario usuario = new Usuario();
+		usuario.setId(toLong(resultado[26]));
+		usuario.setNome((String) resultado[27]);
+		usuario.setCidade((String) resultado[28]);
+		usuario.setTelefone((String) resultado[29]);
+		usuario.setEmail((String) resultado[30]);
+		usuario.setSenha((String) resultado[31]);
+		usuario.setPerfil(UserProfile.valueOf((String) resultado[32]));
+		usuario.setAtivo(toBoolean(resultado[33]));
+		usuario.setAposta(toBoolean(resultado[34]));
+		usuario.setPagamento(toBoolean(resultado[35]));
+		usuario.setPrimeiro(toBoolean(resultado[36]));
+		usuario.setNivel(resultado[37] == null
+				? null
+				: NivelUsuarioEnum.valueOf((String) resultado[37]));
+		usuario.setAvatar((String) resultado[38]);
+		usuario.setDataHoraAposta(toLocalDateTime(resultado[39]));
+		usuario.setDataHoraPgto(toLocalDateTime(resultado[40]));
+		return usuario;
 	}
 
 	public Long obterPlacarExatoPorUsuario(Long idUsuario) {
