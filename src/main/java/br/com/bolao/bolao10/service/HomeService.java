@@ -252,16 +252,11 @@ public class HomeService {
 	 */
 	@Transactional(readOnly = true)
 	public HomeDuranteProximasPartidas carregarPartidasOtimizado() {
-		long inicio = System.currentTimeMillis();
-		System.out.println(">>> [PERFORMANCE HOME] Iniciando carregarPartidasOtimizado...");
 		
 		HomeDuranteProximasPartidas pp = new HomeDuranteProximasPartidas();
 		
 		// USAR QUERY NATIVA: Busca 3 partidas + seleções + apostas em 2 queries
-		long t1 = System.currentTimeMillis();
 		List<Partida> listaPartidas = partidasNativeQuery.carregarProximasPartidasComApostas();
-		long t2 = System.currentTimeMillis();
-		System.out.println(">>> [PERFORMANCE HOME] carregarProximasPartidasComApostas() levou: " + (t2-t1) + "ms");
 		
 		if (listaPartidas != null && listaPartidas.size() > 0) {
 			pp.setPartida1(listaPartidas.get(0));
@@ -272,10 +267,6 @@ public class HomeService {
 				pp.setPartida3(listaPartidas.get(2));
 			}
 		}
-		
-		long fim = System.currentTimeMillis();
-		System.out.println(">>> [PERFORMANCE HOME] TOTAL carregarPartidasOtimizado: " + (fim-inicio) + "ms");
-		
 		return pp;
 	}
 
@@ -285,14 +276,9 @@ public class HomeService {
 	 */
 	@Transactional(readOnly = true)
 	public List<ClassificacaoGrupo> carregarGruposOtimizado() {
-		long inicio = System.currentTimeMillis();
-		System.out.println(">>> [PERFORMANCE HOME] Iniciando carregarGruposOtimizado...");
 		
 		// USAR QUERY NATIVA: Busca classificações + seleções em 1 query
-		long t1 = System.currentTimeMillis();
 		List<Classificacao> listaClassificacao = classificacaoNativeQuery.carregarClassificacaoComSelecoes();
-		long t2 = System.currentTimeMillis();
-		System.out.println(">>> [PERFORMANCE HOME] carregarClassificacaoComSelecoes() levou: " + (t2-t1) + "ms");
 		
 		// Agrupar por grupo (mantém lógica original)
 		List<ClassificacaoGrupo> listaGrupo = new ArrayList<ClassificacaoGrupo>();
@@ -304,10 +290,6 @@ public class HomeService {
 			}).collect(Collectors.toList()));
 			listaGrupo.add(cgA);
 		}
-		
-		long fim = System.currentTimeMillis();
-		System.out.println(">>> [PERFORMANCE HOME] TOTAL carregarGruposOtimizado: " + (fim-inicio) + "ms");
-		
 		return listaGrupo;
 	}
 

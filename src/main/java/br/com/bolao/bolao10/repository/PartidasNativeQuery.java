@@ -141,7 +141,6 @@ public class PartidasNativeQuery {
 	 * Retorna partidas com seleções carregadas + contagem de apostas (vitória A, empate, vitória B).
 	 */
 	public List<Partida> carregarProximasPartidasComApostas() {
-		long inicio = System.currentTimeMillis();
 		
 		// PASSO 1: Buscar as 3 próximas partidas não finalizadas
 		String sqlPartidas = 
@@ -149,20 +148,18 @@ public class PartidasNativeQuery {
 			"  p.idpartida as p_id, p.placara as p_placar_a, p.placarb as p_placar_b, p.datahora as p_datahora, p.fase as p_fase, p.rodada as p_rodada, " +
 			"  p.iniciada as p_iniciada, p.finalizada as p_finalizada, " +
 			"  sa.idselecao as sa_id, sa.nome as sa_nome, sa.imagem as sa_img, sa.grupo as sa_grupo, sa.cor as sa_cor, " +
-			"  sb.idselecao as sb_id, sb.nome as sb_nome, sb.imagem as sb_img, sb.grupo as sb_grupo, sb.cor as sb_cor " +
-			"FROM partida p " +
-			"INNER JOIN selecao sa ON p.idselecaoA = sa.idselecao " +
-			"INNER JOIN selecao sb ON p.idselecaoB = sb.idselecao " +
-			"WHERE p.finalizada = 0 " +
-			"ORDER BY p.datahora " +
-			"LIMIT 3";
+			"  sb.idselecao as sb_id, sb.nome as sb_nome, sb.imagem as sb_img, sb.grupo as sb_grupo, sb.cor as sb_cor, " +
+			"  p.local as p_local " +
+			" FROM partida p " +
+			" INNER JOIN selecao sa ON p.idselecaoA = sa.idselecao " +
+			" INNER JOIN selecao sb ON p.idselecaoB = sb.idselecao " +
+			" WHERE p.finalizada = 0 " +
+			" ORDER BY p.datahora " +
+			" LIMIT 3";
 
 		Query queryPartidas = em.createNativeQuery(sqlPartidas);
 		@SuppressWarnings("unchecked")
 		List<Object[]> resultadosPartidas = queryPartidas.getResultList();
-		
-		long t1 = System.currentTimeMillis();
-		System.out.println(">>> [NATIVE PROXIMAS] Partidas carregadas em: " + (t1-inicio) + "ms - " + resultadosPartidas.size() + " partidas");
 		
 		// PASSO 2: Mapear partidas
 		List<Partida> partidas = new ArrayList<>();
@@ -204,6 +201,8 @@ public class PartidasNativeQuery {
 			
 			partida.setIniciada(toBoolean(row[6]));
 			partida.setFinalizada(toBoolean(row[7]));
+
+			partida.setLocal((String) row[18]);
 			
 			partida.setSelecaoA(selecaoA);
 			partida.setSelecaoB(selecaoB);
@@ -213,9 +212,6 @@ public class PartidasNativeQuery {
 			if (i > 0) idsPartidas.append(",");
 			idsPartidas.append(partida.getId());
 		}
-		
-		long t2 = System.currentTimeMillis();
-		System.out.println(">>> [NATIVE PROXIMAS] Mapeamento de partidas: " + (t2-t1) + "ms");
 		
 		// PASSO 3: Calcular apostas para essas 3 partidas de uma vez
 		if (!partidas.isEmpty()) {
@@ -232,9 +228,6 @@ public class PartidasNativeQuery {
 			Query queryApostas = em.createNativeQuery(sqlApostas);
 			@SuppressWarnings("unchecked")
 			List<Object[]> resultadosApostas = queryApostas.getResultList();
-			
-			long t3 = System.currentTimeMillis();
-			System.out.println(">>> [NATIVE PROXIMAS] Apostas calculadas em: " + (t3-t2) + "ms");
 			
 			// Criar mapa de apostas por partida
 			for (Object[] apostas : resultadosApostas) {
@@ -256,10 +249,6 @@ public class PartidasNativeQuery {
 				}
 			}
 		}
-		
-		long fim = System.currentTimeMillis();
-		System.out.println(">>> [NATIVE PROXIMAS] TOTAL: " + (fim-inicio) + "ms");
-		
 		return partidas;
 	}
 }
