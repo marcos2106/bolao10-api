@@ -111,22 +111,13 @@ public class UsuarioBadgeRepository extends GenericRepository {
 		return mapa;
 	}
 
-	/**
-	 * Verifica se existe algum badge criado HOJE (independente de usuário ou badge).
-	 * Usado para detectar se a scheduled já executou hoje e evitar processamento duplicado.
-	 */
-	public boolean existeBadgeHoje(java.time.LocalDateTime inicioHoje, java.time.LocalDateTime fimHoje) {
-		String sql = "select count(ub) from UsuarioBadge ub "
-				+ "where ub.dataConquista >= :inicio and ub.dataConquista < :fim";
-		try {
-			Long count = em.createQuery(sql, Long.class)
-					.setParameter("inicio", inicioHoje)
-					.setParameter("fim", fimHoje)
-					.getSingleResult();
-			return count != null && count > 0;
-		} catch (Exception e) {
-			return false;
-		}
+	/** Retorna os usuários que possuem determinado badge ativo. */
+	public List<Long> carregarIdsUsuariosAtivosPorBadge(Long idBadge) {
+		String sql = "select distinct ub.usuario.id from UsuarioBadge ub "
+				+ "where ub.badge.id = :idBadge and ub.atual = true";
+		return em.createQuery(sql, Long.class)
+				.setParameter("idBadge", idBadge)
+				.getResultList();
 	}
 
 	/** Inativa todos os registros de usuario_badge para um badge específico */
@@ -134,6 +125,22 @@ public class UsuarioBadgeRepository extends GenericRepository {
 	public void inativarPorBadge(Long idBadge) {
 		em.createQuery("update UsuarioBadge ub set ub.atual = false where ub.badge.id = :idBadge and ub.atual = true")
 				.setParameter("idBadge", idBadge)
+				.executeUpdate();
+		em.flush();
+	}
+
+	/** Inativa os donos anteriores, preservando somente os vencedores informados. */
+	@Transactional
+	public void inativarPorBadgeExceto(Long idBadge, List<Long> idsUsuarios) {
+		if (idsUsuarios == null || idsUsuarios.isEmpty()) {
+			inativarPorBadge(idBadge);
+			return;
+		}
+		em.createQuery("update UsuarioBadge ub set ub.atual = false "
+				+ "where ub.badge.id = :idBadge and ub.atual = true "
+				+ "and ub.usuario.id not in :idsUsuarios")
+				.setParameter("idBadge", idBadge)
+				.setParameter("idsUsuarios", idsUsuarios)
 				.executeUpdate();
 		em.flush();
 	}

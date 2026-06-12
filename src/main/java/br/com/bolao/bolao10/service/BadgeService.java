@@ -1,8 +1,15 @@
 package br.com.bolao.bolao10.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,11 +26,13 @@ import br.com.bolao.bolao10.repository.ApostaColocacaoRepository;
 import br.com.bolao.bolao10.repository.ApostaRepository;
 import br.com.bolao.bolao10.repository.BadgeRepository;
 import br.com.bolao.bolao10.repository.ColocacaoRepository;
+import br.com.bolao.bolao10.repository.PartidaRepository;
 import br.com.bolao.bolao10.repository.RankingHistoricoRepository;
 import br.com.bolao.bolao10.repository.RankingRepository;
 import br.com.bolao.bolao10.repository.UsuarioBadgeRepository;
 import br.com.bolao.bolao10.repository.UserRepository;
 import br.com.bolao.bolao10.domain.enums.TipoNotificacaoEnum;
+import br.com.bolao.bolao10.domain.enums.UserProfile;
 import br.com.bolao.bolao10.domain.Usuario;
 
 /**
@@ -36,7 +45,7 @@ public class BadgeService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BadgeService.class);
 
 	// IDs dos badges conforme inseridos na tabela (mesma ordem do INSERT)
-	private static final long BADGE_MAIOR_CAMPEAO = 1L;
+	private static final long BADGE_SEGUE_LIDER   = 1L;
 	private static final long BADGE_LANTERNA      = 2L;
 	private static final long BADGE_BETEIRO       = 3L;
 	private static final long BADGE_GATO_PRETO    = 4L;
@@ -44,6 +53,7 @@ public class BadgeService {
 	private static final long BADGE_MEIA_BOCA     = 6L;
 	private static final long BADGE_EMPACADO      = 7L;
 	private static final long BADGE_GOLEADOR      = 8L;
+	private static final ZoneId TIME_ZONE = ZoneId.of("America/Sao_Paulo");
 
 	@Autowired private BadgeRepository badgeRepository;
 	@Autowired private UsuarioBadgeRepository usuarioBadgeRepository;
@@ -52,6 +62,7 @@ public class BadgeService {
 	@Autowired private ApostaRepository apostaRepository;
 	@Autowired private ApostaColocacaoRepository apostaColocacaoRepository;
 	@Autowired private ColocacaoRepository colocacaoRepository;
+	@Autowired private PartidaRepository partidaRepository;
 	@Autowired private UserRepository userRepository;
 	@Autowired private UserService userService;
 	@Autowired private NotificacaoService notificacaoService;
@@ -125,31 +136,32 @@ public class BadgeService {
 	}
 
 	/**
-	 * Ponto de entrada principal — atualiza todos os 8 badges.
-	 * Chamado pelo Scheduled job de madrugada.
+	 * Ponto de entrada principal — atualiza todos os 8 badges considerando as
+	 * partidas finalizadas no dia anterior à execução.
+	 * Chamado pelo Scheduled job de madrugada e executado somente quando houve jogos.
 	 */
 	@Transactional
 	public void atualizarTodosBadges() {
 		String executionId = java.util.UUID.randomUUID().toString().substring(0, 8);
 		LOGGER.info("[{}] Iniciando atualização de todos os Badges...", executionId);
 
-		// VERIFICAÇÃO GLOBAL: se já existe algum badge criado HOJE, aborta toda a execução
-		// Isso evita que múltiplas instâncias executem a scheduled duplicada
-		LocalDateTime inicioHoje = LocalDateTime.now().toLocalDate().atStartOfDay();
-		LocalDateTime fimHoje = inicioHoje.plusDays(1);
-		
-		if (usuarioBadgeRepository.existeBadgeHoje(inicioHoje, fimHoje)) {
-			LOGGER.info("[{}] Badges já foram atualizados HOJE - abortando execução duplicada", executionId);
+		LocalDate dataReferencia = LocalDate.now(TIME_ZONE).minusDays(1);
+		LocalDateTime inicio = dataReferencia.atStartOfDay();
+		LocalDateTime fim = inicio.plusDays(1);
+
+		if (!partidaRepository.existePartidaFinalizadaEntre(inicio, fim)) {
+			LOGGER.info("[{}] Nenhuma partida finalizada em {}. Badges não serão atualizados.",
+					executionId, dataReferencia);
 			return;
 		}
 
-		try { aplicarBadgeMaiorCampeao(); } catch (Exception e) { LOGGER.error("[{}] Erro badge MaiorCampeao", executionId, e); }
+		try { aplicarBadgeSegueLider(); }    catch (Exception e) { LOGGER.error("[{}] Erro badge SegueLider", executionId, e); }
 		try { aplicarBadgeLanterna(); }      catch (Exception e) { LOGGER.error("[{}] Erro badge Lanterna", executionId, e); }
-		try { aplicarBadgeBeteiro(); }       catch (Exception e) { LOGGER.error("[{}] Erro badge Beteiro", executionId, e); }
-		try { aplicarBadgeGatoPreto(); }     catch (Exception e) { LOGGER.error("[{}] Erro badge GatoPreto", executionId, e); }
-		try { aplicarBadgeFoguete(); }       catch (Exception e) { LOGGER.error("[{}] Erro badge Foguete", executionId, e); }
-		try { aplicarBadgeMeiaBoca(); }      catch (Exception e) { LOGGER.error("[{}] Erro badge MeiaBoca", executionId, e); }
-		try { aplicarBadgeEmpacado(); }      catch (Exception e) { LOGGER.error("[{}] Erro badge Empacado", executionId, e); }
+		try { aplicarBadgeBeteiro(inicio, fim); }       catch (Exception e) { LOGGER.error("[{}] Erro badge Beteiro", executionId, e); }
+		try { aplicarBadgeGatoPreto(inicio, fim); }     catch (Exception e) { LOGGER.error("[{}] Erro badge GatoPreto", executionId, e); }
+		try { aplicarBadgeFoguete(dataReferencia); }    catch (Exception e) { LOGGER.error("[{}] Erro badge Foguete", executionId, e); }
+		try { aplicarBadgeMeiaBoca(inicio, fim); }      catch (Exception e) { LOGGER.error("[{}] Erro badge MeiaBoca", executionId, e); }
+		try { aplicarBadgeEmpacado(inicio, fim); }      catch (Exception e) { LOGGER.error("[{}] Erro badge Empacado", executionId, e); }
 		try { aplicarBadgeGoleador(); }      catch (Exception e) { LOGGER.error("[{}] Erro badge Goleador", executionId, e); }
 
 		// Atualizar nível de todos os usuários com base na pontuação atual do Ranking
@@ -157,7 +169,9 @@ public class BadgeService {
 			List<Ranking> todosRanking = rankingRepository.carregarRanking();
 			if (todosRanking != null) {
 				for (Ranking r : todosRanking) {
-					userService.atualizarNivel(r.getUsuario().getId(), r.getPontuacao());
+					if (isUsuarioPerfilUser(r.getUsuario())) {
+						userService.atualizarNivel(r.getUsuario().getId(), r.getPontuacao());
+					}
 				}
 			}
 		} catch (Exception e) { LOGGER.error("[{}] Erro ao atualizar níveis", executionId, e); }
@@ -170,160 +184,189 @@ public class BadgeService {
 	// ─────────────────────────────────────────────
 
 	/**
-	 * 🏆 MAIOR CAMPEÃO — usuário que ficou mais tempo na posição 1 do histórico.
+	 * 🏆 SEGUE O LÍDER — todos os usuários USER empatados na maior pontuação atual.
 	 */
-	private void aplicarBadgeMaiorCampeao() {
-		List<RankingHistorico> historico = rankingHistoricoRepository.carregarRankingHistorico();
-		if (historico == null || historico.isEmpty()) return;
-
-		// Conta quantos registros históricos cada usuário tem com posição = 1
-		java.util.Map<Long, Long> contadorLideres = new java.util.HashMap<>();
-		for (RankingHistorico rh : historico) {
-			if (rh.getPosicao() != null && rh.getPosicao() == 1) {
-				Long idUsuario = rh.getUsuario().getId();
-				contadorLideres.merge(idUsuario, 1L, Long::sum);
-			}
-		}
-		if (contadorLideres.isEmpty()) return;
-
-		Long idMaiorCampeao = contadorLideres.entrySet().stream()
-				.max(java.util.Map.Entry.comparingByValue())
-				.map(java.util.Map.Entry::getKey)
-				.orElse(null);
-
-		atribuirBadge(BADGE_MAIOR_CAMPEAO, idMaiorCampeao);
+	private void aplicarBadgeSegueLider() {
+		sincronizarBadge(BADGE_SEGUE_LIDER, carregarIdsPorPontuacaoExtrema(true));
 	}
 
 	/**
-	 * 💩 LANTERNA — usuário em último lugar no ranking atual.
+	 * 💩 LANTERNA — todos os usuários USER empatados na menor pontuação atual.
 	 */
 	private void aplicarBadgeLanterna() {
-		List<Ranking> ranking = rankingRepository.carregarRanking();
-		if (ranking == null || ranking.isEmpty()) return;
-		Long idLanterna = ranking.get(ranking.size() - 1).getUsuario().getId();
-		atribuirBadge(BADGE_LANTERNA, idLanterna);
+		sincronizarBadge(BADGE_LANTERNA, carregarIdsPorPontuacaoExtrema(false));
 	}
 
 	/**
-	 * 🎯 BETEIRO — usuário com mais placares exatos (pontuação = 5) em apostas.
+	 * 🎯 BETEIRO — usuários USER com mais palpites exatos de placar (pontuação = 5)
+	 * nas partidas finalizadas do dia anterior.
 	 */
-	private void aplicarBadgeBeteiro() {
-		Long idBeteiro = apostaRepository.carregarIdUsuarioMaisPlacarExato();
-		atribuirBadge(BADGE_BETEIRO, idBeteiro);
+	private void aplicarBadgeBeteiro(LocalDateTime inicio, LocalDateTime fim) {
+		sincronizarBadge(BADGE_BETEIRO,
+				apostaRepository.carregarIdsUsuariosMaisPlacarExato(inicio, fim));
 	}
 
 	/**
-	 * 🐈 GATO PRETO — usuário com mais apostas zeradas (pontuação = 0).
+	 * 🐈 GATO PRETO — usuários USER com mais apostas zeradas (pontuação = 0)
+	 * nas partidas finalizadas do dia anterior.
 	 */
-	private void aplicarBadgeGatoPreto() {
-		Long idGatoPreto = apostaRepository.carregarIdUsuarioMaisZerou();
-		atribuirBadge(BADGE_GATO_PRETO, idGatoPreto);
+	private void aplicarBadgeGatoPreto(LocalDateTime inicio, LocalDateTime fim) {
+		sincronizarBadge(BADGE_GATO_PRETO,
+				apostaRepository.carregarIdsUsuariosMaisZerou(inicio, fim));
 	}
 
 	/**
-	 * 🚀 FOGUETE — usuário com maior subida de posições em um único dia.
-	 * Compara posição atual com posição anterior no histórico.
+	 * 🚀 FOGUETE — usuários USER com a maior subida positiva de posições.
+	 * Compara o histórico do dia dos jogos com o histórico criado na execução atual.
 	 */
-	private void aplicarBadgeFoguete() {
-		List<Ranking> ranking = rankingRepository.carregarRanking();
-		if (ranking == null || ranking.isEmpty()) return;
+	private void aplicarBadgeFoguete(LocalDate dataReferencia) {
+		List<RankingHistorico> rankingAnterior =
+				rankingHistoricoRepository.carregarRankingHistoricoPorData(dataReferencia);
+		List<RankingHistorico> rankingAtual =
+				rankingHistoricoRepository.carregarRankingHistoricoPorData(dataReferencia.plusDays(1));
 
-		Long idFoguete = null;
+		Map<Long, Integer> posicoesAnteriores = carregarPosicoesUsuarios(rankingAnterior);
+		Map<Long, Integer> posicoesAtuais = carregarPosicoesUsuarios(rankingAtual);
+
+		List<Long> idsFoguete = new ArrayList<>();
 		int maiorSubida = 0;
-		int posicaoAtual = 1;
+		for (Map.Entry<Long, Integer> posicaoAtual : posicoesAtuais.entrySet()) {
+				Integer posicaoAnterior = posicoesAnteriores.get(posicaoAtual.getKey());
+				if (posicaoAnterior == null) continue;
 
-		for (Ranking r : ranking) {
-			if (r.getPosicaoAnterior() != null && r.getPosicaoAnterior() != 999) {
-				int subida = r.getPosicaoAnterior() - posicaoAtual;
+				int subida = posicaoAnterior - posicaoAtual.getValue();
 				if (subida > maiorSubida) {
 					maiorSubida = subida;
-					idFoguete = r.getUsuario().getId();
+					idsFoguete.clear();
+					idsFoguete.add(posicaoAtual.getKey());
+				} else if (subida > 0 && subida == maiorSubida) {
+					idsFoguete.add(posicaoAtual.getKey());
 				}
-			}
-			posicaoAtual++;
 		}
-		if (idFoguete != null) atribuirBadge(BADGE_FOGUETE, idFoguete);
+		sincronizarBadge(BADGE_FOGUETE, idsFoguete);
 	}
 
 	/**
-	 * 😐 MEIA BOCA — usuário com mais palpites de empate acertados.
+	 * 😐 MEIA BOCA — usuários USER com mais palpites de empate acertados
+	 * nas partidas finalizadas do dia anterior.
 	 */
-	private void aplicarBadgeMeiaBoca() {
-		Long idMeiaBoca = apostaRepository.carregarIdUsuarioMaisEmpate();
-		atribuirBadge(BADGE_MEIA_BOCA, idMeiaBoca);
+	private void aplicarBadgeMeiaBoca(LocalDateTime inicio, LocalDateTime fim) {
+		sincronizarBadge(BADGE_MEIA_BOCA,
+				apostaRepository.carregarIdsUsuariosMaisEmpate(inicio, fim));
 	}
 
 	/**
-	 * 🔋 EMPACADO — usuários que não pontuaram na última rodada finalizada.
-	 * Pode ser multiple (vários podem zerar), por isso inativa e atribui a todos.
+	 * 🔋 EMPACADO — usuários USER cuja soma das pontuações foi zero em todas
+	 * as partidas finalizadas do dia anterior.
 	 */
 	@Transactional
-	private void aplicarBadgeEmpacado() {
-		List<Long> idsEmpacados = apostaRepository.carregarIdsUsuariosEmpacados();
-		if (idsEmpacados == null || idsEmpacados.isEmpty()) return;
-
-		Badge badge = badgeRepository.findById(BADGE_EMPACADO);
-		if (badge == null) return;
-
-		usuarioBadgeRepository.inativarPorBadge(BADGE_EMPACADO);
-
-		for (Long idUsuario : idsEmpacados) {
-			UsuarioBadge ub = new UsuarioBadge();
-			ub.setUsuario(userRepository.findById(idUsuario));
-			ub.setBadge(badge);
-			ub.setDataConquista(LocalDateTime.now());
-			ub.setAtual(Boolean.TRUE);
-			usuarioBadgeRepository.salvar(ub);
-		}
+	private void aplicarBadgeEmpacado(LocalDateTime inicio, LocalDateTime fim) {
+		sincronizarBadge(BADGE_EMPACADO,
+				apostaRepository.carregarIdsUsuariosEmpacados(inicio, fim));
 	}
 
 	/**
-	 * ⚽ GOLEADOR — usuário que apostou no artilheiro provisório da copa.
-	 * Compara a seleção artilheira apostada com a colocação real.
+	 * ⚽ GOLEADOR — todos os usuários USER que apostaram na seleção do
+	 * artilheiro provisório da copa.
 	 */
 	private void aplicarBadgeGoleador() {
 		// Carrega o artilheiro definido na colocação oficial
 		Colocacao colocacaoReal = colocacaoRepository.carregarColocacao();
-		if (colocacaoReal == null || colocacaoReal.getArtilharia() == null) return;
+		if (colocacaoReal == null || colocacaoReal.getArtilharia() == null) {
+			sincronizarBadge(BADGE_GOLEADOR, new ArrayList<>());
+			return;
+		}
 
 		Long idArtilheiro = colocacaoReal.getArtilharia().getId();
-		Long idGoleador = apostaColocacaoRepository.carregarIdUsuarioAcertouArtilheiro(idArtilheiro);
-		if (idGoleador != null) atribuirBadge(BADGE_GOLEADOR, idGoleador);
+		sincronizarBadge(BADGE_GOLEADOR,
+				apostaColocacaoRepository.carregarIdsUsuariosAcertaramArtilheiro(idArtilheiro));
+	}
+
+	private List<Long> carregarIdsPorPontuacaoExtrema(boolean maiorPontuacao) {
+		List<Ranking> ranking = rankingRepository.carregarRanking();
+		List<Long> idsUsuarios = new ArrayList<>();
+		Integer pontuacaoExtrema = null;
+
+		if (ranking == null) return idsUsuarios;
+		for (Ranking item : ranking) {
+			if (!isUsuarioPerfilUser(item.getUsuario()) || item.getPontuacao() == null) continue;
+			if (pontuacaoExtrema == null
+					|| (maiorPontuacao && item.getPontuacao() > pontuacaoExtrema)
+					|| (!maiorPontuacao && item.getPontuacao() < pontuacaoExtrema)) {
+				pontuacaoExtrema = item.getPontuacao();
+				idsUsuarios.clear();
+				idsUsuarios.add(item.getUsuario().getId());
+			} else if (item.getPontuacao().equals(pontuacaoExtrema)) {
+				idsUsuarios.add(item.getUsuario().getId());
+			}
+		}
+		return idsUsuarios;
+	}
+
+	private boolean isUsuarioPerfilUser(Usuario usuario) {
+		return usuario != null && UserProfile.USER.equals(usuario.getPerfil());
+	}
+
+	private Map<Long, Integer> carregarPosicoesUsuarios(List<RankingHistorico> historicos) {
+		Map<Long, Integer> posicoes = new HashMap<>();
+		if (historicos == null) return posicoes;
+
+		List<RankingHistorico> historicosUsuarios = new ArrayList<>();
+		Set<Long> idsAdicionados = new HashSet<>();
+		for (RankingHistorico historico : historicos) {
+			if (historico.getPosicao() != null
+					&& isUsuarioPerfilUser(historico.getUsuario())
+					&& idsAdicionados.add(historico.getUsuario().getId())) {
+				historicosUsuarios.add(historico);
+			}
+		}
+		historicosUsuarios.sort(Comparator.comparing(RankingHistorico::getPosicao));
+
+		int posicao = 1;
+		for (RankingHistorico historico : historicosUsuarios) {
+			posicoes.put(historico.getUsuario().getId(), posicao++);
+		}
+		return posicoes;
 	}
 
 	/**
-	 * Helper: inativa badge do dono anterior e atribui ao novo dono.
-	 * Badges dinâmicos têm exatamente 1 dono ativo por vez.
-	 * 
-	 * Cada dia é uma nova conquista - o usuário pode ganhar o mesmo badge todos os dias
-	 * que atender ao critério (ex: líder 3 dias seguidos = 3 selos no histórico).
-	 * 
-	 * Nota: A verificação de duplicação (se já rodou hoje) é feita no método atualizarTodosBadges(),
-	 * então este método pode ser chamado diretamente sem preocupação com duplicação.
+	 * Sincroniza todos os vencedores de um badge.
+	 * Mantém ativos os usuários que continuam atendendo ao critério, inativa quem
+	 * deixou de atender e cria uma conquista somente para os novos vencedores.
 	 */
-	@Transactional
-	private void atribuirBadge(Long idBadge, Long idUsuario) {
-		if (idUsuario == null) return;
+	private void sincronizarBadge(Long idBadge, List<Long> idsUsuarios) {
+		Set<Long> idsVencedores = new HashSet<>();
+		if (idsUsuarios != null) {
+			for (Long idUsuario : idsUsuarios) {
+				if (idUsuario != null) idsVencedores.add(idUsuario);
+			}
+		}
+
+		List<Long> idsAtivos = usuarioBadgeRepository.carregarIdsUsuariosAtivosPorBadge(idBadge);
+		usuarioBadgeRepository.inativarPorBadgeExceto(idBadge, new ArrayList<>(idsVencedores));
+
+		if (idsVencedores.isEmpty()) return;
 		Badge badge = badgeRepository.findById(idBadge);
 		if (badge == null) return;
-		Usuario usuario = userRepository.findById(idUsuario);
-		if (usuario == null) return;
 
-		// Inativa o dono anterior (pode ser outro usuário ou o mesmo usuário)
-		usuarioBadgeRepository.inativarPorBadge(idBadge);
+		Set<Long> idsJaAtivos = new HashSet<>();
+		if (idsAtivos != null) idsJaAtivos.addAll(idsAtivos);
 
-		// Cria o novo registro (nova conquista no histórico)
-		UsuarioBadge ub = new UsuarioBadge();
-		ub.setUsuario(usuario);
-		ub.setBadge(badge);
-		ub.setDataConquista(LocalDateTime.now());
-		ub.setAtual(Boolean.TRUE);
-		usuarioBadgeRepository.salvar(ub);
+		for (Long idUsuario : idsVencedores) {
+			if (idsJaAtivos.contains(idUsuario)) continue;
+			Usuario usuario = userRepository.findById(idUsuario);
+			if (!isUsuarioPerfilUser(usuario)) continue;
+			UsuarioBadge ub = new UsuarioBadge();
+			ub.setUsuario(usuario);
+			ub.setBadge(badge);
+			ub.setDataConquista(LocalDateTime.now(TIME_ZONE));
+			ub.setAtual(Boolean.TRUE);
+			usuarioBadgeRepository.salvar(ub);
 
-		// Dispara a Notificacao Global
-		String msg = usuario.getNome() + " conquistou um novo selo de qualidade: " + badge.getNome();
-		notificacaoService.salvarNotificacao(TipoNotificacaoEnum.NOVO_BADGE, msg);
+			String msg = usuario.getNome() + " conquistou um novo selo de qualidade: " + badge.getNome();
+			notificacaoService.salvarNotificacao(TipoNotificacaoEnum.NOVO_BADGE, msg);
 
-		LOGGER.info("Badge '{}' atribuído ao usuário ID {}", badge.getNome(), idUsuario);
+			LOGGER.info("Badge '{}' atribuído ao usuário ID {}", badge.getNome(), idUsuario);
+		}
 	}
 }

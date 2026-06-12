@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import br.com.bolao.bolao10.domain.ApostaColocacao;
+import br.com.bolao.bolao10.domain.enums.UserProfile;
 import br.com.bolao.bolao10.model.ApostaColocacaoSelecao;
 import br.com.bolao.bolao10.support.Constants;
 
@@ -145,17 +146,16 @@ public class ApostaColocacaoRepository extends GenericRepository {
 		em.createNativeQuery(sql).executeUpdate();
 	}
 
-	/** Retorna o ID do primeiro usuário que apostou no artilheiro provisório — Badge Goleador */
-	public Long carregarIdUsuarioAcertouArtilheiro(Long idSelecaoArtilheiro) {
+	/** Retorna todos os usuários USER que apostaram no artilheiro provisório — Badge Goleador */
+	public List<Long> carregarIdsUsuariosAcertaramArtilheiro(Long idSelecaoArtilheiro) {
 		try {
 			String sql = "select c.usuario.id from ApostaColocacao c "
-					+ "where c.artilharia.id = :idSelecao";
-			List<Long> result = em.createQuery(sql, Long.class)
+					+ "where c.artilharia.id = :idSelecao and c.usuario.perfil = :perfil";
+			return em.createQuery(sql, Long.class)
 					.setParameter("idSelecao", idSelecaoArtilheiro)
-					.setMaxResults(1)
+					.setParameter("perfil", UserProfile.USER)
 					.getResultList();
-			return result.isEmpty() ? null : result.get(0);
-		} catch (Exception e) { return null; }
+		} catch (Exception e) { return new java.util.ArrayList<>(); }
 	}
 
 }

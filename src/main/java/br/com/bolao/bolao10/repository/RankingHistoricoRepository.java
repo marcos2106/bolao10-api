@@ -97,4 +97,19 @@ public class RankingHistoricoRepository extends GenericRepository {
 
 		return query.getResultList();
 	}
+
+	/** Carrega o ranking completo registrado na data informada. */
+	public List<RankingHistorico> carregarRankingHistoricoPorData(LocalDate dataRegistro) {
+
+		StringBuilder sql = new StringBuilder();
+		sql.append(" select r from RankingHistorico r ");
+		sql.append(" join fetch r.usuario u ");
+		sql.append(" where r.dataRegistro = :dataRegistro ");
+		sql.append(" order by r.posicao, r.id ");
+
+		TypedQuery<RankingHistorico> query = em.createQuery(sql.toString(), RankingHistorico.class);
+		query.setParameter("dataRegistro", dataRegistro);
+
+		return query.getResultList();
+	}
 }

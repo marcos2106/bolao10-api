@@ -1,6 +1,7 @@
 
 package br.com.bolao.bolao10.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -189,6 +190,21 @@ public class PartidaRepository extends GenericRepository {
 		catch (Exception e) {
 			return 0L;
 		}
+	}
+
+	/** Verifica se houve ao menos uma partida finalizada no período informado. */
+	public boolean existePartidaFinalizadaEntre(LocalDateTime inicio, LocalDateTime fim) {
+
+		StringBuilder sql = new StringBuilder();
+		sql.append(" select count(p) from Partida p ");
+		sql.append(" where p.finalizada = true ");
+		sql.append(" and p.dataHora >= :inicio and p.dataHora < :fim ");
+
+		TypedQuery<Long> query = em.createQuery(sql.toString(), Long.class);
+		query.setParameter("inicio", inicio);
+		query.setParameter("fim", fim);
+
+		return query.getSingleResult() > 0;
 	}
 
 }

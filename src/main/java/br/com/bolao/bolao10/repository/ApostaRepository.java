@@ -322,59 +322,88 @@ public class ApostaRepository extends GenericRepository {
 		return (pontuacaoBD == null) ? 0 : pontuacaoBD.intValue();		
 	}
 
-	/** Retorna o ID do usuário com mais placares exatos (pontuacao = 5) — Badge Beteiro */
-	public Long carregarIdUsuarioMaisPlacarExato() {
+	/** Retorna os usuários USER com mais palpites exatos no período — Badge Beteiro */
+	public List<Long> carregarIdsUsuariosMaisPlacarExato(LocalDateTime inicio, LocalDateTime fim) {
 		try {
-			String sql = "select a.usuario.id from Aposta a where a.pontuacao = 5 "
+			String sql = "select a.usuario.id, count(a) from Aposta a where a.pontuacao = 5 "
+					+ "and a.partida.finalizada = true "
+					+ "and a.partida.dataHora >= :inicio and a.partida.dataHora < :fim "
+					+ "and a.usuario.perfil = :perfil "
 					+ "group by a.usuario.id order by count(a) desc";
-			List<Long> result = em.createQuery(sql, Long.class).setMaxResults(1).getResultList();
-			return result.isEmpty() ? null : result.get(0);
-		} catch (Exception e) { return null; }
+			List<Object[]> result = em.createQuery(sql, Object[].class)
+					.setParameter("inicio", inicio)
+					.setParameter("fim", fim)
+					.setParameter("perfil", UserProfile.USER)
+					.getResultList();
+			return carregarIdsComMaiorQuantidade(result);
+		} catch (Exception e) { return new ArrayList<>(); }
 	}
 
-	/** Retorna o ID do usuário com mais placares zerados (pontuacao = 0) — Badge Gato Preto */
-	public Long carregarIdUsuarioMaisZerou() {
+	/** Retorna os usuários USER com mais palpites zerados no período — Badge Gato Preto */
+	public List<Long> carregarIdsUsuariosMaisZerou(LocalDateTime inicio, LocalDateTime fim) {
 		try {
-			String sql = "select a.usuario.id from Aposta a where a.pontuacao = 0 "
+			String sql = "select a.usuario.id, count(a) from Aposta a where a.pontuacao = 0 "
+					+ "and a.partida.finalizada = true "
+					+ "and a.partida.dataHora >= :inicio and a.partida.dataHora < :fim "
+					+ "and a.usuario.perfil = :perfil "
 					+ "group by a.usuario.id order by count(a) desc";
-			List<Long> result = em.createQuery(sql, Long.class).setMaxResults(1).getResultList();
-			return result.isEmpty() ? null : result.get(0);
-		} catch (Exception e) { return null; }
+			List<Object[]> result = em.createQuery(sql, Object[].class)
+					.setParameter("inicio", inicio)
+					.setParameter("fim", fim)
+					.setParameter("perfil", UserProfile.USER)
+					.getResultList();
+			return carregarIdsComMaiorQuantidade(result);
+		} catch (Exception e) { return new ArrayList<>(); }
 	}
 
-	/** Retorna o ID do usuário com mais empates acertados — Badge Meia Boca */
-	public Long carregarIdUsuarioMaisEmpate() {
+	/** Retorna os usuários USER com mais empates acertados no período — Badge Meia Boca */
+	public List<Long> carregarIdsUsuariosMaisEmpate(LocalDateTime inicio, LocalDateTime fim) {
 		try {
 			// Empate acertado: apostou empate E a partida empatou (placarA = placarB e pontuacao > 0)
-			String sql = "select a.usuario.id from Aposta a "
+			String sql = "select a.usuario.id, count(a) from Aposta a "
 					+ "where a.placarA = a.placarB and a.pontuacao is not null and a.pontuacao > 0 "
+					+ "and a.partida.placarA = a.partida.placarB "
+					+ "and a.partida.finalizada = true "
+					+ "and a.partida.dataHora >= :inicio and a.partida.dataHora < :fim "
+					+ "and a.usuario.perfil = :perfil "
 					+ "group by a.usuario.id order by count(a) desc";
-			List<Long> result = em.createQuery(sql, Long.class).setMaxResults(1).getResultList();
-			return result.isEmpty() ? null : result.get(0);
-		} catch (Exception e) { return null; }
+			List<Object[]> result = em.createQuery(sql, Object[].class)
+					.setParameter("inicio", inicio)
+					.setParameter("fim", fim)
+					.setParameter("perfil", UserProfile.USER)
+					.getResultList();
+			return carregarIdsComMaiorQuantidade(result);
+		} catch (Exception e) { return new ArrayList<>(); }
 	}
 
 	/**
-	 * Retorna IDs dos usuários que zeraram pontos na ÚLTIMA partida calculada — Badge Empacado.
-	 * Considera a última partida que teve pontuação calculada (pontuacao not null).
+	 * Retorna os usuários USER cuja soma das pontuações foi zero no período — Badge Empacado.
 	 */
-	public java.util.List<Long> carregarIdsUsuariosEmpacados() {
+	public java.util.List<Long> carregarIdsUsuariosEmpacados(LocalDateTime inicio, LocalDateTime fim) {
 		try {
-			// Encontra o ID da última partida que teve pontuação calculada
-			String sqlUltimaPartida = "select a.partida.id from Aposta a "
-					+ "where a.pontuacao is not null "
-					+ "order by a.partida.dataHora desc";
-			List<Long> idsUltimaPartida = em.createQuery(sqlUltimaPartida, Long.class).setMaxResults(1).getResultList();
-			if (idsUltimaPartida.isEmpty()) return new java.util.ArrayList<>();
-			Long idUltimaPartida = idsUltimaPartida.get(0);
-
-			// Busca usuários que zeraram nessa partida
 			String sql = "select a.usuario.id from Aposta a "
-					+ "where a.partida.id = :idPartida and a.pontuacao = 0";
+					+ "where a.partida.finalizada = true and a.pontuacao is not null "
+					+ "and a.partida.dataHora >= :inicio and a.partida.dataHora < :fim "
+					+ "and a.usuario.perfil = :perfil "
+					+ "group by a.usuario.id having sum(a.pontuacao) = 0";
 			return em.createQuery(sql, Long.class)
-					.setParameter("idPartida", idUltimaPartida)
+					.setParameter("inicio", inicio)
+					.setParameter("fim", fim)
+					.setParameter("perfil", UserProfile.USER)
 					.getResultList();
 		} catch (Exception e) { return new java.util.ArrayList<>(); }
+	}
+
+	private List<Long> carregarIdsComMaiorQuantidade(List<Object[]> result) {
+		List<Long> idsUsuarios = new ArrayList<>();
+		if (result == null || result.isEmpty()) return idsUsuarios;
+
+		long maiorQuantidade = ((Number) result.get(0)[1]).longValue();
+		for (Object[] item : result) {
+			if (((Number) item[1]).longValue() != maiorQuantidade) break;
+			idsUsuarios.add(((Number) item[0]).longValue());
+		}
+		return idsUsuarios;
 	}
 
 }
