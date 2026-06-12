@@ -534,7 +534,7 @@ public class BolaoService {
 
 		// não sei se precisa ordenar novamente, já que no salvar já ordena
 		for (RankingCustomizado rc : listaRnkCu) {
-			Collections.sort(rc.getListaRanking(), Comparator.comparing(Ranking::getPontuacao));
+			Collections.sort(rc.getListaRanking(), Comparator.comparing(Ranking::getPontuacao).reversed());
 		}
 		return listaRnkCu;
 	}
