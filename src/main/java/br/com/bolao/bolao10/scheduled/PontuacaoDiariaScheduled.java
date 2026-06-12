@@ -1,5 +1,11 @@
 package br.com.bolao.bolao10.scheduled;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +22,7 @@ import br.com.bolao.bolao10.support.Constants;
 public class PontuacaoDiariaScheduled {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PontuacaoDiariaScheduled.class);
-	//private static final String TIME_ZONE = "America/Sao_Paulo";
+	private static final String LOCK_PONTUACAO_DIARIA = "bolao10:pontuacao-diaria";
 
 	@Autowired
 	private BolaoService bolaoService;
@@ -27,27 +33,63 @@ public class PontuacaoDiariaScheduled {
 	@Autowired
 	private ConfiguracaoService configuracaoService;
 
+	@Autowired
+	private DataSource dataSource;
+
 	/**
-	 * Atualizar os dados de pontução do ranking e os Badges de cada usuário.
-	 * Roda às 02h da madrugada (após todos os jogos do dia serem computados)
+	 * Atualiza a pontuacao do ranking e os badges diariamente, as 02h.
 	 */
 	@Scheduled(cron = "0 0 2 * * *", zone = "America/Sao_Paulo")
 	public void execute() {
 
-		// primeiro verifica a situação do bolão, se está DURANTE
+		try (Connection connection = dataSource.getConnection()) {
+			if (!adquirirLock(connection)) {
+				LOGGER.info("Scheduled de pontuacao diaria ignorada: outra instancia ja esta processando.");
+				return;
+			}
+
+			try {
+				processarPontuacaoDiaria();
+			} finally {
+				liberarLock(connection);
+			}
+		} catch (Exception e) {
+			LOGGER.error("Erro ao controlar a execucao exclusiva da Scheduled de Pontuacao Diaria", e);
+		}
+	}
+
+	private void processarPontuacaoDiaria() {
 		Situacao situacao = configuracaoService.situacaoAtiva();
 
 		if (situacao != null && situacao.getId() == Constants.SITUACAO_DURANTE) {
 			try {
 				bolaoService.atualizarPontuacaoDiaria();
 			} catch (Exception e) {
-				LOGGER.error("Erro na execução da Scheduled de Pontuação Diária", e);
+				LOGGER.error("Erro na execucao da Scheduled de Pontuacao Diaria", e);
 			}
 			try {
 				badgeService.atualizarTodosBadges();
 			} catch (Exception e) {
-				LOGGER.error("Erro na execução da Scheduled de Badges", e);
+				LOGGER.error("Erro na execucao da Scheduled de Badges", e);
 			}
+		}
+	}
+
+	private boolean adquirirLock(Connection connection) throws Exception {
+		try (PreparedStatement statement = connection.prepareStatement("select get_lock(?, 0)")) {
+			statement.setString(1, LOCK_PONTUACAO_DIARIA);
+			try (ResultSet result = statement.executeQuery()) {
+				return result.next() && result.getInt(1) == 1;
+			}
+		}
+	}
+
+	private void liberarLock(Connection connection) {
+		try (PreparedStatement statement = connection.prepareStatement("select release_lock(?)")) {
+			statement.setString(1, LOCK_PONTUACAO_DIARIA);
+			statement.executeQuery();
+		} catch (Exception e) {
+			LOGGER.error("Erro ao liberar lock da Scheduled de Pontuacao Diaria", e);
 		}
 	}
 }

@@ -1,6 +1,7 @@
 
 package br.com.bolao.bolao10.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -83,5 +84,17 @@ public class RankingHistoricoRepository extends GenericRepository {
 		catch (Exception e) {
 			return null;
 		}
+	}
+
+	public List<Long> carregarIdsUsuariosPorData(LocalDate dataRegistro) {
+
+		StringBuilder sql = new StringBuilder();
+		sql.append(" select r.usuario.id from RankingHistorico r ");
+		sql.append(" where r.dataRegistro = :dataRegistro ");
+
+		TypedQuery<Long> query = em.createQuery(sql.toString(), Long.class);
+		query.setParameter("dataRegistro", dataRegistro);
+
+		return query.getResultList();
 	}
 }

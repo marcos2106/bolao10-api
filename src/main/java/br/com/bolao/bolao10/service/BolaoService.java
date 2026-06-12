@@ -7,7 +7,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -276,14 +278,22 @@ public class BolaoService {
 
 		if (situacao != null && situacao.getId() == Constants.SITUACAO_DURANTE) {
 
+			LocalDate dataRegistro = LocalDate.now();
+			Set<Long> idsUsuariosProcessados = new HashSet<Long>(
+					rhRepository.carregarIdsUsuariosPorData(dataRegistro));
 			List<Ranking> listaRanking = rankingRepository.carregarRanking();
 			int i = 1;
 			for (Ranking ranking : listaRanking) {
+				if (idsUsuariosProcessados.contains(ranking.getUsuario().getId())) {
+					i++;
+					continue;
+				}
+
 				RankingHistorico rh = new RankingHistorico();
 				rh.setUsuario(ranking.getUsuario());
 				rh.setPosicao(i++);
 				rh.setPontuacao(ranking.getPontuacao());
-				rh.setDataRegistro(LocalDate.now());
+				rh.setDataRegistro(dataRegistro);
 				rhRepository.save(rh);
 			}
 		}
