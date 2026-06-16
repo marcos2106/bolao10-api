@@ -471,7 +471,7 @@ public class BolaoService {
 
 	public List<RankingUsuario> carregarRankingAtivo() {
 
-		List<Ranking> listaRanking = rankingRepository.carregarRanking();
+		List<Ranking> listaRanking = rankingRepository.carregarRankingUsuariosAtivosOrdenadosPorNome();
 
 		List<RankingUsuario> listaUR = new ArrayList<RankingUsuario>();
 

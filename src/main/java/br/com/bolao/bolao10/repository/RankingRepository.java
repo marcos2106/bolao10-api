@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import br.com.bolao.bolao10.domain.Ranking;
 import br.com.bolao.bolao10.domain.Usuario;
+import br.com.bolao.bolao10.domain.enums.UserProfile;
 
 @Repository
 public class RankingRepository extends GenericRepository {
@@ -80,6 +81,21 @@ public class RankingRepository extends GenericRepository {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	public List<Ranking> carregarRankingUsuariosAtivosOrdenadosPorNome() {
+
+		StringBuilder sql = new StringBuilder();
+		sql.append(" select r from Ranking r ");
+		sql.append(" join fetch r.usuario u ");
+		sql.append(" where u.perfil = :perfil ");
+		sql.append(" and u.ativo = true ");
+		sql.append(" order by u.nome ");
+
+		TypedQuery<Ranking> query = em.createQuery(sql.toString(), Ranking.class);
+		query.setParameter("perfil", UserProfile.USER);
+
+		return query.getResultList();
 	}
 
 	public Long obterPontuacaoPorUsuario(Long idUsuario) {
