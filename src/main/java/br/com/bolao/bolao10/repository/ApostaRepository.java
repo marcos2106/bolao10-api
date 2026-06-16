@@ -356,7 +356,7 @@ public class ApostaRepository extends GenericRepository {
 		} catch (Exception e) { return new ArrayList<>(); }
 	}
 
-	/** Retorna os usuários USER com mais empates acertados no período — Badge Meia Boca */
+	/** Retorna os usuários USER com mais empates acertados no período — Badge Mestre do Empate */
 	public List<Long> carregarIdsUsuariosMaisEmpate(LocalDateTime inicio, LocalDateTime fim) {
 		try {
 			// Empate acertado: apostou empate E a partida empatou (placarA = placarB e pontuacao > 0)

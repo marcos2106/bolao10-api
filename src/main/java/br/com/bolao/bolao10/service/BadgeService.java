@@ -50,7 +50,7 @@ public class BadgeService {
 	private static final long BADGE_BETEIRO       = 3L;
 	private static final long BADGE_GATO_PRETO    = 4L;
 	private static final long BADGE_FOGUETE       = 5L;
-	private static final long BADGE_MEIA_BOCA     = 6L;
+	private static final long BADGE_MESTRE_EMPATE = 6L;
 	private static final long BADGE_EMPACADO      = 7L;
 	private static final long BADGE_GOLEADOR      = 8L;
 	private static final ZoneId TIME_ZONE = ZoneId.of("America/Sao_Paulo");
@@ -136,7 +136,7 @@ public class BadgeService {
 	}
 
 	/**
-	 * Ponto de entrada principal — atualiza todos os 8 badges considerando as
+	 * Ponto de entrada principal — atualiza os badges ativos considerando as
 	 * partidas finalizadas no dia anterior à execução.
 	 * Chamado pelo Scheduled job de madrugada e executado somente quando houve jogos.
 	 */
@@ -160,8 +160,9 @@ public class BadgeService {
 		try { aplicarBadgeBeteiro(inicio, fim); }       catch (Exception e) { LOGGER.error("[{}] Erro badge Beteiro", executionId, e); }
 		try { aplicarBadgeGatoPreto(inicio, fim); }     catch (Exception e) { LOGGER.error("[{}] Erro badge GatoPreto", executionId, e); }
 		try { aplicarBadgeFoguete(dataReferencia); }    catch (Exception e) { LOGGER.error("[{}] Erro badge Foguete", executionId, e); }
-		try { aplicarBadgeMeiaBoca(inicio, fim); }      catch (Exception e) { LOGGER.error("[{}] Erro badge MeiaBoca", executionId, e); }
-		try { aplicarBadgeEmpacado(inicio, fim); }      catch (Exception e) { LOGGER.error("[{}] Erro badge Empacado", executionId, e); }
+		try { aplicarBadgeMestreEmpate(inicio, fim); }  catch (Exception e) { LOGGER.error("[{}] Erro badge MestreEmpate", executionId, e); }
+		// Badge Empacado desabilitado: na prática duplica o Gato Preto.
+		// try { aplicarBadgeEmpacado(inicio, fim); }      catch (Exception e) { LOGGER.error("[{}] Erro badge Empacado", executionId, e); }
 		try { aplicarBadgeGoleador(); }      catch (Exception e) { LOGGER.error("[{}] Erro badge Goleador", executionId, e); }
 
 		// Atualizar nível de todos os usuários com base na pontuação atual do Ranking
@@ -247,11 +248,11 @@ public class BadgeService {
 	}
 
 	/**
-	 * 😐 MEIA BOCA — usuários USER com mais palpites de empate acertados
+	 * MESTRE DO EMPATE — usuários USER com mais palpites de empate acertados
 	 * nas partidas finalizadas do dia anterior.
 	 */
-	private void aplicarBadgeMeiaBoca(LocalDateTime inicio, LocalDateTime fim) {
-		sincronizarBadge(BADGE_MEIA_BOCA,
+	private void aplicarBadgeMestreEmpate(LocalDateTime inicio, LocalDateTime fim) {
+		sincronizarBadge(BADGE_MESTRE_EMPATE,
 				apostaRepository.carregarIdsUsuariosMaisEmpate(inicio, fim));
 	}
 
