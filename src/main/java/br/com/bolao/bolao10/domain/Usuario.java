@@ -17,8 +17,6 @@ import javax.persistence.Transient;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import br.com.bolao.bolao10.domain.enums.NivelUsuarioEnum;
 import br.com.bolao.bolao10.domain.enums.UserProfile;
 import br.com.bolao.bolao10.support.Strings;

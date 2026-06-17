@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.bolao.bolao10.domain.Partida;
-import br.com.bolao.bolao10.repository.PartidaRepository;
 import br.com.bolao.bolao10.repository.PartidasNativeQuery;
 
 @Service
@@ -17,14 +16,11 @@ import br.com.bolao.bolao10.repository.PartidasNativeQuery;
 public class PartidaService {
 
 	@Autowired
-	private PartidaRepository partidaRepository;
-	
-	@Autowired
 	private PartidasNativeQuery partidasNativeQuery;
 	
 	@Transactional
 	public List<Partida> carregarPartidas() {
-		return partidaRepository.carregarPartidasTabela();
+		return partidasNativeQuery.carregarPartidasComSelecoes();
 	}
 	
 	/**

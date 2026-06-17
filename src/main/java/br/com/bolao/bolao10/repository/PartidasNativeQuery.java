@@ -59,6 +59,7 @@ public class PartidasNativeQuery {
 			"SELECT " +
 			"  p.idpartida as p_id, p.placara as p_placar_a, p.placarb as p_placar_b, p.datahora as p_datahora, p.fase as p_fase, p.rodada as p_rodada, " +
 			"  p.iniciada as p_iniciada, p.finalizada as p_finalizada, " +
+			"  p.local as p_local, " +
 			"  sa.idselecao as sa_id, sa.nome as sa_nome, sa.imagem as sa_img, sa.grupo as sa_grupo, " +
 			"  sb.idselecao as sb_id, sb.nome as sb_nome, sb.imagem as sb_img, sb.grupo as sb_grupo " +
 			"FROM partida p " +
@@ -82,17 +83,17 @@ public class PartidasNativeQuery {
 		for (Object[] row : resultados) {
 			// Criar Selecao A
 			Selecao selecaoA = new Selecao();
-			selecaoA.setId(((Number) row[8]).longValue());
-			selecaoA.setNome((String) row[9]);
-			selecaoA.setImagem((String) row[10]);
-			selecaoA.setGrupo((String) row[11]);
+			selecaoA.setId(((Number) row[9]).longValue());
+			selecaoA.setNome((String) row[10]);
+			selecaoA.setImagem((String) row[11]);
+			selecaoA.setGrupo((String) row[12]);
 			
 			// Criar Selecao B
 			Selecao selecaoB = new Selecao();
-			selecaoB.setId(((Number) row[12]).longValue());
-			selecaoB.setNome((String) row[13]);
-			selecaoB.setImagem((String) row[14]);
-			selecaoB.setGrupo((String) row[15]);
+			selecaoB.setId(((Number) row[13]).longValue());
+			selecaoB.setNome((String) row[14]);
+			selecaoB.setImagem((String) row[15]);
+			selecaoB.setGrupo((String) row[16]);
 			
 			// Criar Partida
 			Partida partida = new Partida();
@@ -122,6 +123,7 @@ public class PartidasNativeQuery {
 			
 			partida.setIniciada(toBoolean(row[6]));
 			partida.setFinalizada(toBoolean(row[7]));
+			partida.setLocal((String) row[8]);
 			
 			partida.setSelecaoA(selecaoA);
 			partida.setSelecaoB(selecaoB);
