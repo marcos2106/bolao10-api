@@ -73,8 +73,9 @@ public class JogadorRepository extends GenericRepository {
 
 		StringBuilder sql = new StringBuilder();
 		sql.append(" select j		        ");
-		sql.append(" from Jogador j	 		");
+		sql.append(" from Jogador j	 	");
 		sql.append(" where j.ativo = true	");
+		sql.append(" and j.gols > 0		");
 		sql.append(" order by j.gols desc	");
 
 		TypedQuery<Jogador> query = em.createQuery(sql.toString(), Jogador.class);
