@@ -8,10 +8,10 @@ public enum NivelUsuarioEnum {
 
     SEM_NIVEL   ("Sem Nível",      0,   19,  0),
     AMADOR      ("Amador",         20,  39,  1),
-    JUVENIL     ("Juvenil",        40,  119, 2),
-    PROFISSIONAL("Profissional",   120, 144, 3),
-    BETEIRO     ("Beteiro",        145, 169, 4),
-    LENDA       ("Lenda",          170, Integer.MAX_VALUE, 5);
+    JUVENIL     ("Juvenil",        40,  101, 2),
+    PROFISSIONAL("Profissional",   102, 123, 3),
+    BETEIRO     ("Beteiro",        124, 144, 4),
+    LENDA       ("Lenda",          145, Integer.MAX_VALUE, 5);
 
     private final String descricao;
     private final int pontuacaoMin;
