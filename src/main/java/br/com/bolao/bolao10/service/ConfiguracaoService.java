@@ -297,7 +297,7 @@ public class ConfiguracaoService {
 		
 		Usuario liderAntigo = rankingRepository.obterLiderRanking();
 
-		List<Ranking> listaRnk = rankingRepository.carregarRanking();
+		List<Ranking> listaRnk = rankingRepository.carregarRankingObrigatorio();
 		
 		for (Ranking rnk : listaRnk) {
 			
@@ -323,7 +323,7 @@ public class ConfiguracaoService {
 		
 		Usuario liderAntigo = rankingRepository.obterLiderRanking();
 
-		List<Ranking> listaRnk = rankingRepository.carregarRanking();
+		List<Ranking> listaRnk = rankingRepository.carregarRankingObrigatorio();
 		
 		for (Ranking rnk : listaRnk) {
 			Integer pontuacao = apostaRepository.calcularPontuacaoProvisoria(rnk.getUsuario());
@@ -340,7 +340,7 @@ public class ConfiguracaoService {
 
 	private void contabilizaPosicaoRanking() {
 
-		List<Ranking> listaRnk = rankingRepository.carregarRanking();
+		List<Ranking> listaRnk = rankingRepository.carregarRankingObrigatorio();
 		int i = 1;
 		for (Ranking ranking : listaRnk) {
 			ranking.setPosicaoAnterior(i++);
@@ -470,7 +470,7 @@ public class ConfiguracaoService {
 	@Transactional
 	private void contabilizarPontuacao(Partida partida) {
 
-		List<Aposta> listaApostas = apostaRepository.carregarApostaPorPartida(partida.getId());
+		List<Aposta> listaApostas = carregarApostasObrigatorias(partida);
 
 		Integer placarA = partida.getPlacarA();
 		Integer placarB = partida.getPlacarB();
@@ -549,7 +549,7 @@ public class ConfiguracaoService {
 
 	private void contabilizarPontuacaoFinal(Partida partida) {
 
-		List<Aposta> listaPartida = apostaRepository.carregarApostaPorPartida(partida.getId());
+		List<Aposta> listaPartida = carregarApostasObrigatorias(partida);
 
 		for (Aposta aposta : listaPartida) {
 
@@ -559,6 +559,15 @@ public class ConfiguracaoService {
 			apostaRepository.save(aposta);
 		}
 
+	}
+
+	private List<Aposta> carregarApostasObrigatorias(Partida partida) {
+
+		List<Aposta> listaApostas = apostaRepository.carregarApostaPorPartidaObrigatorio(partida.getId());
+		if (listaApostas == null || listaApostas.isEmpty()) {
+			throw new Bolao10Exception("Nenhuma aposta encontrada para processar a partida " + partida.getId() + ".");
+		}
+		return listaApostas;
 	}
 
 	public Partida carregarPartida(Long id) {

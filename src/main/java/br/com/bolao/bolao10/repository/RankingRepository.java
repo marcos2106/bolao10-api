@@ -83,6 +83,16 @@ public class RankingRepository extends GenericRepository {
 		}
 	}
 
+	public List<Ranking> carregarRankingObrigatorio() {
+		StringBuilder sql = new StringBuilder();
+		sql.append(" select distinct r from Ranking r ");
+		sql.append(" left join fetch r.usuario u ");
+		sql.append(" order by r.pontuacao desc, u.nome ");
+
+		TypedQuery<Ranking> query = em.createQuery(sql.toString(), Ranking.class);
+		return query.getResultList();
+	}
+
 	public List<Ranking> carregarRankingUsuariosAtivosOrdenadosPorNome() {
 
 		StringBuilder sql = new StringBuilder();

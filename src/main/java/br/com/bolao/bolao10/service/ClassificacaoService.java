@@ -48,7 +48,7 @@ public class ClassificacaoService {
 	private void somarVitoriaClassificacao(Partida partida, Selecao selecaoVitoria, Selecao selecaoDerrota, 
 			Integer placarVitoria, Integer placarDerrota) {
 		
-		Classificacao cSelecaoVitoria = classificacaoRepository.findBySelecao(selecaoVitoria.getId());
+		Classificacao cSelecaoVitoria = classificacaoRepository.findBySelecaoObrigatorio(selecaoVitoria.getId());
 		cSelecaoVitoria.setPontos(cSelecaoVitoria.getPontos()+3);
 		cSelecaoVitoria.setVitoria(cSelecaoVitoria.getVitoria()+1);
 		cSelecaoVitoria.setGolspro(cSelecaoVitoria.getGolspro() + placarVitoria);
@@ -56,7 +56,7 @@ public class ClassificacaoService {
 		cSelecaoVitoria.setSaldogols(cSelecaoVitoria.getGolspro() - cSelecaoVitoria.getGolscontra());
 		classificacaoRepository.save(cSelecaoVitoria);
 
-		Classificacao cSelecaoDerrota = classificacaoRepository.findBySelecao(selecaoDerrota.getId());
+		Classificacao cSelecaoDerrota = classificacaoRepository.findBySelecaoObrigatorio(selecaoDerrota.getId());
 		cSelecaoDerrota.setDerrota(cSelecaoDerrota.getDerrota()+1);
 		cSelecaoDerrota.setGolspro(cSelecaoDerrota.getGolspro() + placarDerrota);
 		cSelecaoDerrota.setGolscontra(cSelecaoDerrota.getGolscontra() + placarVitoria);
@@ -66,7 +66,7 @@ public class ClassificacaoService {
 
 	private void somarEmpateClassificacao(Partida partida) {
 		
-		Classificacao cSelecaoEmpateA = classificacaoRepository.findBySelecao(partida.getSelecaoA().getId());
+		Classificacao cSelecaoEmpateA = classificacaoRepository.findBySelecaoObrigatorio(partida.getSelecaoA().getId());
 		cSelecaoEmpateA.setPontos(cSelecaoEmpateA.getPontos() + 1);
 		cSelecaoEmpateA.setEmpate(cSelecaoEmpateA.getEmpate() + 1);
 		cSelecaoEmpateA.setGolspro(cSelecaoEmpateA.getGolspro() + partida.getPlacarA());
@@ -74,7 +74,7 @@ public class ClassificacaoService {
 		cSelecaoEmpateA.setSaldogols(cSelecaoEmpateA.getGolspro() - cSelecaoEmpateA.getGolscontra());
 		classificacaoRepository.save(cSelecaoEmpateA);
 		
-		Classificacao cSelecaoEmpateB = classificacaoRepository.findBySelecao(partida.getSelecaoB().getId());
+		Classificacao cSelecaoEmpateB = classificacaoRepository.findBySelecaoObrigatorio(partida.getSelecaoB().getId());
 		cSelecaoEmpateB.setPontos(cSelecaoEmpateB.getPontos() + 1);
 		cSelecaoEmpateB.setEmpate(cSelecaoEmpateB.getEmpate() + 1);
 		cSelecaoEmpateB.setGolspro(cSelecaoEmpateB.getGolspro() + partida.getPlacarB());

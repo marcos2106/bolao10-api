@@ -170,6 +170,27 @@ public class ApostaRepository extends GenericRepository {
 		}
 	}
 
+	public List<Aposta> carregarApostaPorPartidaObrigatorio(Long idPartida) {
+
+		StringBuilder sql = new StringBuilder();
+		sql.append(" select a from Aposta a                ");
+		sql.append(" join fetch a.usuario                ");
+		sql.append(" join fetch a.partida p              ");
+		sql.append(" join fetch p.selecaoA              ");
+		sql.append(" join fetch p.selecaoB              ");
+		sql.append(" where p.id = :idPartida              ");
+		sql.append(" order by                  ");
+		sql.append("   case when p.iniciada = true and p.finalizada = true then a.pontuacao end desc, ");
+		sql.append("   case when p.iniciada = true and p.finalizada = false then a.pontuacaoProvisoria end desc, ");
+		sql.append("   case when p.iniciada = false then a.placarA end asc, ");
+		sql.append("   case when p.iniciada = false then a.placarB end asc   ");
+
+		TypedQuery<Aposta> query = em.createQuery(sql.toString(), Aposta.class);
+		query.setParameter("idPartida", idPartida);
+
+		return query.getResultList();
+	}
+
 	public List<Aposta> carregarApostaPorUsuario(Long idUsuario) {
 
 		StringBuilder sql = new StringBuilder();

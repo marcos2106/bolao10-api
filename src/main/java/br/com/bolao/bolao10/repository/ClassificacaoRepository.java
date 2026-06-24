@@ -44,6 +44,18 @@ public class ClassificacaoRepository extends GenericRepository {
 		}
 	}
 
+	public Classificacao findBySelecaoObrigatorio(Long idSelecao) {
+
+		StringBuilder sql = new StringBuilder();
+		sql.append(" select c from Classificacao c	");
+		sql.append(" where c.selecao.id = :idSelecao	");
+
+		TypedQuery<Classificacao> query = em.createQuery(sql.toString(), Classificacao.class);
+		query.setParameter("idSelecao", idSelecao);
+
+		return query.getSingleResult();
+	}
+
 	public List<Classificacao> carregarClassificacao() {
 
 		StringBuilder sql = new StringBuilder();

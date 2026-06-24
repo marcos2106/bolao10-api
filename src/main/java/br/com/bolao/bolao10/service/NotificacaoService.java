@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.bolao.bolao10.domain.Notificacao;
@@ -33,7 +34,7 @@ public class NotificacaoService {
 	 * @param tipo     Tipo do evento
 	 * @param mensagem Texto descrevendo quem fez o quê
 	 */
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void salvarNotificacao(TipoNotificacaoEnum tipo, String mensagem) {
 		try {
 			Notificacao notificacao = new Notificacao();
