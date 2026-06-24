@@ -18,14 +18,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.bolao.bolao10.domain.Badge;
-import br.com.bolao.bolao10.domain.Colocacao;
+import br.com.bolao.bolao10.domain.Jogador;
 import br.com.bolao.bolao10.domain.Ranking;
 import br.com.bolao.bolao10.domain.RankingHistorico;
 import br.com.bolao.bolao10.domain.UsuarioBadge;
 import br.com.bolao.bolao10.repository.ApostaColocacaoRepository;
 import br.com.bolao.bolao10.repository.ApostaRepository;
 import br.com.bolao.bolao10.repository.BadgeRepository;
-import br.com.bolao.bolao10.repository.ColocacaoRepository;
+import br.com.bolao.bolao10.repository.JogadorRepository;
 import br.com.bolao.bolao10.repository.PartidaRepository;
 import br.com.bolao.bolao10.repository.RankingHistoricoRepository;
 import br.com.bolao.bolao10.repository.RankingRepository;
@@ -61,7 +61,7 @@ public class BadgeService {
 	@Autowired private RankingHistoricoRepository rankingHistoricoRepository;
 	@Autowired private ApostaRepository apostaRepository;
 	@Autowired private ApostaColocacaoRepository apostaColocacaoRepository;
-	@Autowired private ColocacaoRepository colocacaoRepository;
+	@Autowired private JogadorRepository jogadorRepository;
 	@Autowired private PartidaRepository partidaRepository;
 	@Autowired private UserRepository userRepository;
 	@Autowired private UserService userService;
@@ -271,16 +271,29 @@ public class BadgeService {
 	 * artilheiro provisório da copa.
 	 */
 	private void aplicarBadgeGoleador() {
-		// Carrega o artilheiro definido na colocação oficial
-		Colocacao colocacaoReal = colocacaoRepository.carregarColocacao();
-		if (colocacaoReal == null || colocacaoReal.getArtilharia() == null) {
+		List<Jogador> artilharia = jogadorRepository.carregarArtilharia();
+		if (artilharia == null || artilharia.isEmpty()) {
 			sincronizarBadge(BADGE_GOLEADOR, new ArrayList<>());
 			return;
 		}
 
-		Long idArtilheiro = colocacaoReal.getArtilharia().getId();
-		sincronizarBadge(BADGE_GOLEADOR,
-				apostaColocacaoRepository.carregarIdsUsuariosAcertaramArtilheiro(idArtilheiro));
+		int maiorQuantidadeGols = artilharia.get(0).getGols();
+		List<Long> idsUsuarios = new ArrayList<>();
+		Set<Long> idsSelecoesArtilheiras = new HashSet<>();
+
+		for (Jogador jogador : artilharia) {
+			if (jogador.getGols() < maiorQuantidadeGols) {
+				break;
+			}
+			if (jogador.getSelecao() == null || jogador.getSelecao().getId() == null) {
+				continue;
+			}
+			if (idsSelecoesArtilheiras.add(jogador.getSelecao().getId())) {
+				idsUsuarios.addAll(apostaColocacaoRepository
+						.carregarIdsUsuariosAcertaramArtilheiro(jogador.getSelecao().getId()));
+			}
+		}
+		sincronizarBadge(BADGE_GOLEADOR, idsUsuarios);
 	}
 
 	private List<Long> carregarIdsPorPontuacaoExtrema(boolean maiorPontuacao) {
