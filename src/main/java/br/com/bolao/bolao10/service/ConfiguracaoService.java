@@ -284,7 +284,9 @@ public class ConfiguracaoService {
 			// Só atualiza as posições antes das contabilizações do início da partida
 			contabilizaPosicaoRanking();
 
-			classificacaoService.contabilizarClassificacao(partidaPersist);
+			if (partidaPersist.getFase() == 1) { // Só tem classificacao na fase de grupos
+				classificacaoService.contabilizarClassificacao(partidaPersist);
+			}
 			contabilizarPontuacao(partidaPersist);
 			contabilizarPontuacaoRanking();
 
