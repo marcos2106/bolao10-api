@@ -113,6 +113,10 @@ public class ConfiguracaoService {
 
 			contabilizarPontuacaoColocacao(colocacao, colRequest);
 			
+			if (colocacao == null) {
+				colocacao = new Colocacao();
+			}
+
 			if ((colocacao == null || colocacao.getCampeao() == null) && colRequest.getCampeao().getId() != null) {
 				colocacao.setCampeao(selecaoRepository.findById(colRequest.getCampeao().getId()));
 			}
@@ -234,13 +238,16 @@ public class ConfiguracaoService {
 			try {
 				acRepository.save(ac);
 
+				System.out.println("Salvando aposta de colocação do usuário " + ac.getUsuario().getNome() + " com pontuação " + pontuacaoRnk);
+
 				if (pontuacaoRnk > Constants.APOSTA_ERRADA ) {
 					Ranking ranking = rankingRepository.findById(ac.getUsuario().getId());
 					ranking.setPontuacao(ranking.getPontuacao() + pontuacaoRnk);
 					rankingRepository.save(ranking);
 				}
 			} catch (Exception e) {
-				throw new Bolao10Exception("Erro na hora de salvar as Colocações.");
+				System.err.println(e.getMessage());
+				throw new Bolao10Exception("Erro na hora de salvar as Colocações.", e);
 			}
 		}
 	}

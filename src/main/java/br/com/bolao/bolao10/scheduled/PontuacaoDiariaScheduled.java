@@ -39,7 +39,7 @@ public class PontuacaoDiariaScheduled {
 	/**
 	 * Atualiza a pontuacao do ranking e os badges diariamente, as 02h.
 	 */
-	@Scheduled(cron = "0 0 2 * * *", zone = "America/Sao_Paulo")
+	//@Scheduled(cron = "0 0 2 * * *", zone = "America/Sao_Paulo")
 	public void execute() {
 
 		try (Connection connection = dataSource.getConnection()) {
